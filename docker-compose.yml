@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "CHANGE_ME"
+      POSTGRES_DB: ai_medical_db
+    volumes:
+      - ./docker/postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    env_file: backend/.env
+    environment:
+      # Override localhost → db container hostname
+      DATABASE_URL: postgresql://postgres:CHANGE_ME@db:5432/ai_medical_db
+      # Allow both port-80 frontend and local dev
+      ALLOWED_ORIGINS: '["http://localhost","http://localhost:80","http://localhost:3000"]'
+      # Optional: set your Anthropic API key to enable the AI chat assistant
+      # ANTHROPIC_API_KEY: "sk-ant-..."
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./ml/models/saved:/app/ml/models/saved
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
