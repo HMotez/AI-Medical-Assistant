@@ -17,8 +17,13 @@ htmlcov/
 # ML models (large files)
 ml/models/saved/*.pkl
 ml/models/saved/*.joblib
+ml/models/saved/*.json
 ml/data/raw/*.csv
 ml/data/processed/*.csv
+
+# Backend generated artifacts
+backend/*.db
+backend/reports/*.pdf
 
 # Node / React
 frontend/node_modules/
