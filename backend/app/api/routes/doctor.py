@@ -26,7 +26,7 @@ def list_patient_analyses(
             "patient_id":             a.patient_id,
             "urgency_level":          a.urgency_level.value if a.urgency_level else None,
             "recommended_specialist": a.recommended_specialist,
-            "top_disease":            a.predictions[0].disease.name if a.predictions else None,
+            "top_disease":            a.top_disease,
             "has_comment":            a.doctor_comment is not None,
             "created_at":             a.created_at.isoformat(),
         }
@@ -51,6 +51,8 @@ def get_analysis_detail(
         "symptoms":               [s.name for s in a.symptoms],
         "symptom_duration":       a.symptom_duration,
         "severity":               a.severity,
+        "free_text":              a.free_text,
+        "details":                a.ml_details or {},
         "urgency_level":          a.urgency_level.value if a.urgency_level else None,
         "recommended_specialist": a.recommended_specialist,
         "explanation":            a.explanation,
@@ -62,6 +64,7 @@ def get_analysis_detail(
             "comment":           a.doctor_comment.comment,
             "corrected_disease": a.doctor_comment.corrected_disease,
             "is_validated":      a.doctor_comment.is_validated,
+            "doctor_name":       a.doctor_comment.doctor.full_name if a.doctor_comment.doctor else None,
         } if a.doctor_comment else None,
         "created_at": a.created_at.isoformat(),
     }

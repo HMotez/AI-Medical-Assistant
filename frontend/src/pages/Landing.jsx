@@ -1,4 +1,5 @@
 import { useSearchParams, Link } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import {
   Heart, Brain, Wind, Microscope, Stethoscope, Shield,
@@ -9,35 +10,43 @@ import {
 import { PHOTOS } from "../constants/photos";
 
 const DEPARTMENTS = [
-  { Icon: Heart,       label: "Cardiology",      desc: "Heart & circulatory",   color: "from-red-400 to-rose-600" },
-  { Icon: Brain,       label: "Neurology",        desc: "Nervous system",        color: "from-purple-400 to-violet-600" },
-  { Icon: Wind,        label: "Pulmonology",      desc: "Respiratory tract",     color: "from-blue-400 to-cyan-600" },
-  { Icon: Microscope,  label: "Dermatology",      desc: "Skin & tissue",         color: "from-pink-400 to-fuchsia-600" },
-  { Icon: Stethoscope, label: "General Medicine", desc: "Primary care",          color: "from-teal-400 to-emerald-600" },
-  { Icon: Shield,      label: "Infectiology",     desc: "Infectious diseases",   color: "from-green-400 to-lime-600" },
+  { Icon: Heart,       key: "cardiology",   color: "from-red-400 to-rose-600" },
+  { Icon: Brain,       key: "neurology",    color: "from-purple-400 to-violet-600" },
+  { Icon: Wind,        key: "pulmonology",  color: "from-blue-400 to-cyan-600" },
+  { Icon: Microscope,  key: "dermatology",  color: "from-pink-400 to-fuchsia-600" },
+  { Icon: Stethoscope, key: "general",      color: "from-teal-400 to-emerald-600" },
+  { Icon: Shield,      key: "infectiology", color: "from-green-400 to-lime-600" },
 ];
 
 const FEATURES = [
-  { Icon: Zap,        title: "3-Second Analysis",  desc: "Instant AI diagnosis with top 5 probable diseases ranked by confidence score.",        color: "from-amber-400 to-orange-500" },
-  { Icon: Search,     title: "Explainable AI",      desc: "Each prediction shows exactly which symptoms drove the decision — full transparency.",  color: "from-teal-400 to-cyan-500" },
-  { Icon: FileText,   title: "PDF Medical Report",  desc: "Professional clinical report generated instantly, ready to share with your doctor.",    color: "from-blue-400 to-indigo-500" },
-  { Icon: TrendingUp, title: "Progress Tracking",   desc: "Compare analyses over time to detect health trends and monitor your improvements.",     color: "from-purple-400 to-violet-500" },
-  { Icon: Shield,     title: "Data Privacy",        desc: "Your health data is encrypted end-to-end and never sold or shared with third parties.", color: "from-green-400 to-emerald-500" },
-  { Icon: Users,      title: "Doctor Review",       desc: "Certified doctors can review your AI analysis and add professional medical comments.",  color: "from-rose-400 to-pink-500" },
+  { Icon: Zap,        key: "speed",    color: "from-amber-400 to-orange-500" },
+  { Icon: Search,     key: "xai",      color: "from-teal-400 to-cyan-500" },
+  { Icon: FileText,   key: "pdf",      color: "from-blue-400 to-indigo-500" },
+  { Icon: TrendingUp, key: "progress", color: "from-purple-400 to-violet-500" },
+  { Icon: Shield,     key: "privacy",  color: "from-green-400 to-emerald-500" },
+  { Icon: Users,      key: "review",   color: "from-rose-400 to-pink-500" },
 ];
 
 const STATS = [
-  { value: "41",   label: "Diseases Covered",  Icon: Activity, color: "from-teal-400 to-emerald-500" },
-  { value: "132",  label: "Symptoms Tracked",  Icon: Search,   color: "from-blue-400 to-cyan-500" },
-  { value: "100%", label: "Model Accuracy",    Icon: Award,    color: "from-purple-400 to-violet-500" },
-  { value: "<3s",  label: "Response Time",     Icon: Clock,    color: "from-green-400 to-lime-500" },
+  { value: "41",  key: "diseases", Icon: Activity, color: "from-teal-400 to-emerald-500" },
+  { value: "131", key: "symptoms", Icon: Search,   color: "from-blue-400 to-cyan-500" },
+  { value: "95%", key: "accuracy", Icon: Award,    color: "from-purple-400 to-violet-500" },
+  { value: "<3s", key: "response", Icon: Clock,    color: "from-green-400 to-lime-500" },
 ];
 
 const STEPS = [
-  { n: "01", title: "Create your account",  desc: "Free sign-up in 30 seconds.",               grad: "from-teal-400 to-emerald-500" },
-  { n: "02", title: "Select symptoms",      desc: "Choose from 132 medical symptoms.",          grad: "from-blue-400 to-cyan-500" },
-  { n: "03", title: "Get AI analysis",      desc: "Top 5 predictions + specialist + urgency.", grad: "from-purple-400 to-violet-500" },
-  { n: "04", title: "Download PDF report",  desc: "Professional report ready for your doctor.", grad: "from-green-400 to-lime-500" },
+  { n: "01", key: "account",  grad: "from-teal-400 to-emerald-500" },
+  { n: "02", key: "symptoms", grad: "from-blue-400 to-cyan-500" },
+  { n: "03", key: "analysis", grad: "from-purple-400 to-violet-500" },
+  { n: "04", key: "report",   grad: "from-green-400 to-lime-500" },
+];
+
+// Number of diseases per urgency level (matches URGENCY_RULES in the backend)
+const URGENCY = [
+  { key: "emergency", count: 2,  color: "from-red-400 to-red-600" },
+  { key: "high",      count: 9,  color: "from-orange-400 to-orange-600" },
+  { key: "moderate",  count: 4,  color: "from-amber-400 to-amber-600" },
+  { key: "low",       count: 26, color: "from-green-400 to-green-600" },
 ];
 
 /* Full-screen photo background wrapper — same concept as the hero */
@@ -66,6 +75,7 @@ function SectionTag({ children, color = "text-teal-400" }) {
 
 /* ── HOME VIEW ── */
 function HomeView({ user }) {
+  const { t } = useTranslation();
   return (
     <div>
       {/* Hero */}
@@ -80,26 +90,26 @@ function HomeView({ user }) {
         <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center pt-16 pb-8">
           <div className="max-w-xl">
             <span className="inline-flex items-center gap-2 bg-teal-500/15 text-teal-700 border border-teal-400/30 text-xs font-black px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest">
-              <Star className="w-3 h-3 fill-teal-500 text-teal-500" /> AI-Powered Medical Platform
+              <Star className="w-3 h-3 fill-teal-500 text-teal-500" /> {t("landing.hero.badge")}
             </span>
             <h1 className="font-black leading-[1.08] mb-5 text-gray-900" style={{ fontSize: "clamp(2.6rem, 5vw, 4rem)" }}>
-              Your Health,<br />Our Priority
+              {t("landing.hero.title1")}<br />{t("landing.hero.title2")}
             </h1>
             <p className="text-gray-600 text-lg mb-8 leading-relaxed max-w-md">
-              Compassionate AI-driven care for you and your family. Describe your symptoms and get an instant medical analysis.
+              {t("landing.hero.text")}
             </p>
             <div className="flex flex-wrap gap-3 mb-10">
               <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary text-base font-black px-8 py-4 gap-2 shadow-teal">
-                Check My Symptoms <ArrowRight className="w-5 h-5" />
+                {t("landing.hero.cta")} <ArrowRight className="w-5 h-5" />
               </Link>
               <Link to="/login" className="bg-white/80 hover:bg-white border-2 border-teal-400/40 text-teal-700 font-black text-base px-8 py-4 rounded-full shadow-md hover:shadow-lg transition-all flex items-center gap-2 backdrop-blur-sm">
-                <Stethoscope className="w-5 h-5" /> Doctor Portal
+                <Stethoscope className="w-5 h-5" /> {t("landing.hero.doctorPortal")}
               </Link>
             </div>
             <div className="flex items-center gap-5 flex-wrap">
-              {["Free forever", "100% private", "No ads"].map((t, i) => (
-                <span key={i} className="flex items-center gap-1.5 text-sm font-semibold text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-teal-500" /> {t}
+              {["free", "private", "noAds"].map(k => (
+                <span key={k} className="flex items-center gap-1.5 text-sm font-semibold text-gray-600">
+                  <CheckCircle className="w-4 h-4 text-teal-500" /> {t(`landing.hero.badges.${k}`)}
                 </span>
               ))}
             </div>
@@ -112,46 +122,44 @@ function HomeView({ user }) {
             <div className="bg-white/85 backdrop-blur-md rounded-3xl shadow-card-hover border border-white p-4">
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
                 <div>
-                  <label className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
-                    <Stethoscope className="w-3 h-3" /> Specialty
+                  <label htmlFor="quick-specialty" className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
+                    <Stethoscope className="w-3 h-3" /> {t("landing.quick.specialty")}
                   </label>
                   <div className="relative">
-                    <select className="input-field pr-8 font-semibold appearance-none bg-gray-50">
-                      <option>All Specialties</option>
-                      <option>Cardiology</option><option>Neurology</option><option>Pulmonology</option>
-                      <option>Dermatology</option><option>General Medicine</option><option>Infectiology</option>
+                    <select id="quick-specialty" className="input-field pr-8 font-semibold appearance-none bg-gray-50">
+                      <option>{t("landing.quick.allSpecialties")}</option>
+                      {DEPARTMENTS.map(d => <option key={d.key}>{t(`landing.departments.${d.key}.label`)}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
-                    <Activity className="w-3 h-3" /> Symptom Type
+                  <label htmlFor="quick-type" className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
+                    <Activity className="w-3 h-3" /> {t("landing.quick.symptomType")}
                   </label>
                   <div className="relative">
-                    <select className="input-field pr-8 font-semibold appearance-none bg-gray-50">
-                      <option>Select type</option>
-                      <option>Pain & Discomfort</option><option>Fever & Chills</option>
-                      <option>Respiratory</option><option>Skin & Rash</option><option>Digestive</option>
+                    <select id="quick-type" className="input-field pr-8 font-semibold appearance-none bg-gray-50">
+                      <option>{t("landing.quick.selectType")}</option>
+                      {["pain", "fever", "respiratory", "skin", "digestive"].map(k =>
+                        <option key={k}>{t(`landing.quick.types.${k}`)}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
-                    <Zap className="w-3 h-3" /> Urgency Feeling
+                  <label htmlFor="quick-urgency" className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
+                    <Zap className="w-3 h-3" /> {t("landing.quick.urgencyFeeling")}
                   </label>
                   <div className="relative">
-                    <select className="input-field pr-8 font-semibold appearance-none bg-gray-50">
-                      <option>Not sure</option>
-                      <option>Mild — can wait</option><option>Moderate — getting worse</option>
-                      <option>Emergency — need help now</option>
+                    <select id="quick-urgency" className="input-field pr-8 font-semibold appearance-none bg-gray-50">
+                      {["notSure", "mild", "moderate", "emergency"].map(k =>
+                        <option key={k}>{t(`landing.quick.urgency.${k}`)}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
                 <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary w-full justify-center text-base font-black py-3.5 gap-2 rounded-2xl shadow-teal">
-                  <Activity className="w-5 h-5" /> Analyze Now
+                  <Activity className="w-5 h-5" /> {t("landing.quick.analyze")}
                 </Link>
               </div>
             </div>
@@ -163,17 +171,17 @@ function HomeView({ user }) {
       <PhotoPage photo={PHOTOS.doctorDash} overlay="linear-gradient(135deg, rgba(6,14,28,0.88) 0%, rgba(6,30,50,0.82) 100%)">
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="text-center mb-10">
-            <SectionTag>Platform Stats</SectionTag>
-            <h2 className="text-3xl font-black text-white">Trusted by Patients Worldwide</h2>
+            <SectionTag>{t("landing.stats.tag")}</SectionTag>
+            <h2 className="text-3xl font-black text-white">{t("landing.stats.title")}</h2>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {STATS.map(({ value, label, Icon, color }, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col items-center gap-3 hover:-translate-y-1 transition-all hover:bg-white/15">
+            {STATS.map(({ value, key, Icon, color }) => (
+              <div key={key} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col items-center gap-3 hover:-translate-y-1 transition-all hover:bg-white/15">
                 <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center shadow-lg`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <div className="text-4xl font-black text-white">{value}</div>
-                <div className="text-xs font-bold text-white/60 text-center uppercase tracking-wide">{label}</div>
+                <div className="text-xs font-bold text-white/60 text-center uppercase tracking-wide">{t(`landing.stats.${key}`)}</div>
               </div>
             ))}
           </div>
@@ -185,40 +193,41 @@ function HomeView({ user }) {
 
 /* ── SERVICES VIEW ── */
 function ServicesView({ user }) {
+  const { t } = useTranslation();
   return (
     <PhotoPage photo={PHOTOS.symptomChecker} overlay="linear-gradient(135deg, rgba(6,14,28,0.87) 0%, rgba(6,26,36,0.82) 100%)">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-14">
-          <SectionTag>Features</SectionTag>
-          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">AI-Powered Services</h1>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">Everything you need for smart symptom analysis — fast, private, explainable.</p>
+          <SectionTag>{t("landing.services.tag")}</SectionTag>
+          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">{t("landing.services.title")}</h1>
+          <p className="text-white/60 text-lg max-w-xl mx-auto">{t("landing.services.text")}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {FEATURES.map(({ Icon, title, desc, color }, i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-7 group hover:-translate-y-2 hover:bg-white/15 hover:border-white/30 transition-all duration-300">
+          {FEATURES.map(({ Icon, key, color }) => (
+            <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-7 group hover:-translate-y-2 hover:bg-white/15 hover:border-white/30 transition-all duration-300">
               <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
                 <Icon className="w-7 h-7 text-white" />
               </div>
-              <h3 className="font-black text-white mb-2">{title}</h3>
-              <p className="text-sm text-white/55 leading-relaxed">{desc}</p>
+              <h3 className="font-black text-white mb-2">{t(`landing.services.features.${key}.title`)}</h3>
+              <p className="text-sm text-white/55 leading-relaxed">{t(`landing.services.features.${key}.desc`)}</p>
             </div>
           ))}
         </div>
 
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-10 mb-10">
-          <h2 className="text-2xl font-black text-white text-center mb-2">How It Works</h2>
-          <p className="text-white/50 text-center mb-10">From symptoms to report in 4 simple steps</p>
+          <h2 className="text-2xl font-black text-white text-center mb-2">{t("landing.services.howTitle")}</h2>
+          <p className="text-white/50 text-center mb-10">{t("landing.services.howText")}</p>
           <div className="grid md:grid-cols-4 gap-6 relative">
             <div className="hidden md:block absolute top-9 left-[12.5%] right-[12.5%] h-0.5"
               style={{ background: "linear-gradient(to right, #14b8a6, #3b82f6, #8b5cf6, #22c55e)" }} />
-            {STEPS.map((s, i) => (
-              <div key={i} className="text-center group">
+            {STEPS.map(s => (
+              <div key={s.key} className="text-center group">
                 <div className={`w-14 h-14 bg-gradient-to-br ${s.grad} rounded-2xl flex items-center justify-center font-black text-lg mx-auto mb-5 shadow-lg text-white group-hover:scale-110 transition-transform`}>
                   {s.n}
                 </div>
-                <h3 className="font-black text-white mb-2 text-sm">{s.title}</h3>
-                <p className="text-xs text-white/50 leading-relaxed">{s.desc}</p>
+                <h3 className="font-black text-white mb-2 text-sm">{t(`landing.services.steps.${s.key}.title`)}</h3>
+                <p className="text-xs text-white/50 leading-relaxed">{t(`landing.services.steps.${s.key}.desc`)}</p>
               </div>
             ))}
           </div>
@@ -226,7 +235,7 @@ function ServicesView({ user }) {
 
         <div className="text-center">
           <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary text-base font-black px-10 py-4 gap-2 shadow-teal">
-            Get Started Free <ArrowRight className="w-5 h-5" />
+            {t("landing.services.cta")} <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </div>
@@ -236,53 +245,47 @@ function ServicesView({ user }) {
 
 /* ── SPECIALTIES VIEW ── */
 function DepartmentsView({ user }) {
-  const URGENCY = [
-    { label: "Emergency", count: 4,  color: "from-red-400 to-red-600",       desc: "Requires immediate medical attention" },
-    { label: "High",      count: 16, color: "from-orange-400 to-orange-600", desc: "See a doctor within 24 hours" },
-    { label: "Moderate",  count: 15, color: "from-amber-400 to-amber-600",   desc: "Schedule within a week" },
-    { label: "Low",       count: 6,  color: "from-green-400 to-green-600",   desc: "Monitor symptoms, stay hydrated" },
-  ];
-
+  const { t } = useTranslation();
   return (
     <PhotoPage photo={PHOTOS.results} overlay="linear-gradient(135deg, rgba(6,14,28,0.87) 0%, rgba(10,20,50,0.82) 100%)">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-14">
-          <SectionTag>Specialties</SectionTag>
-          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">Medical Domains Covered</h1>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">41 diseases across 6 major medical specialties, powered by a 4,920-case dataset.</p>
+          <SectionTag>{t("landing.specialties.tag")}</SectionTag>
+          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">{t("landing.specialties.title")}</h1>
+          <p className="text-white/60 text-lg max-w-xl mx-auto">{t("landing.specialties.text")}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-14">
-          {DEPARTMENTS.map(({ Icon, label, desc, color }, i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 flex flex-col items-center text-center gap-3 group hover:-translate-y-3 hover:bg-white/18 hover:border-white/30 transition-all duration-300">
+          {DEPARTMENTS.map(({ Icon, key, color }) => (
+            <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 flex flex-col items-center text-center gap-3 group hover:-translate-y-3 hover:bg-white/18 hover:border-white/30 transition-all duration-300">
               <div className={`w-16 h-16 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
                 <Icon className="w-8 h-8 text-white" />
               </div>
-              <div className="font-black text-sm text-white">{label}</div>
-              <div className="text-xs text-white/50 leading-snug">{desc}</div>
+              <div className="font-black text-sm text-white">{t(`landing.departments.${key}.label`)}</div>
+              <div className="text-xs text-white/50 leading-snug">{t(`landing.departments.${key}.desc`)}</div>
             </div>
           ))}
         </div>
 
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-black text-white mb-2">Urgency Classification</h2>
-          <p className="text-white/50">Every diagnosis is automatically classified by urgency level</p>
+          <h2 className="text-3xl font-black text-white mb-2">{t("landing.specialties.urgencyTitle")}</h2>
+          <p className="text-white/50">{t("landing.specialties.urgencyText")}</p>
         </div>
         <div className="grid md:grid-cols-4 gap-5 mb-14">
-          {URGENCY.map(({ label, count, color, desc }) => (
-            <div key={label} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-6 text-center hover:-translate-y-1 hover:bg-white/15 transition-all">
+          {URGENCY.map(({ key, count, color }) => (
+            <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-6 text-center hover:-translate-y-1 hover:bg-white/15 transition-all">
               <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                 <span className="text-white font-black text-xl">{count}</span>
               </div>
-              <div className="font-black text-white mb-2">{label}</div>
-              <p className="text-xs text-white/50 leading-relaxed">{desc}</p>
+              <div className="font-black text-white mb-2">{t(`common.urgency.${key}`)}</div>
+              <p className="text-xs text-white/50 leading-relaxed">{t(`landing.specialties.urgency.${key}`)}</p>
             </div>
           ))}
         </div>
 
         <div className="text-center">
           <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary text-base font-black px-10 py-4 gap-2 shadow-teal">
-            Check My Symptoms <ArrowRight className="w-5 h-5" />
+            {t("landing.specialties.cta")} <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </div>
@@ -291,31 +294,36 @@ function DepartmentsView({ user }) {
 }
 
 /* ── CONTACT VIEW ── */
+const CONTACT_CARDS = [
+  { Icon: Mail,   key: "email",    color: "from-teal-400 to-cyan-500" },
+  { Icon: MapPin, key: "platform", color: "from-blue-400 to-indigo-500" },
+  { Icon: Shield, key: "privacy",  color: "from-green-400 to-emerald-500" },
+];
+const EMERGENCY_NUMBERS = [["samu", "15"], ["fire", "18"], ["police", "17"], ["europe", "112"]];
+const POLICIES = ["privacy", "notReplacement", "accuracy", "reports"];
+
 function ContactView() {
+  const { t } = useTranslation();
   return (
     <PhotoPage photo={PHOTOS.history} overlay="linear-gradient(135deg, rgba(6,14,28,0.88) 0%, rgba(20,10,30,0.83) 100%)">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-14">
-          <SectionTag color="text-amber-400">Contact</SectionTag>
-          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">Get In Touch</h1>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">Have questions? For medical emergencies, always call emergency services immediately.</p>
+          <SectionTag color="text-amber-400">{t("landing.contact.tag")}</SectionTag>
+          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">{t("landing.contact.title")}</h1>
+          <p className="text-white/60 text-lg max-w-xl mx-auto">{t("landing.contact.text")}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-10">
           <div className="space-y-4">
-            {[
-              { Icon: Mail,   title: "Email Support", value: "support@medai.com",    sub: "We respond within 24 hours",        color: "from-teal-400 to-cyan-500" },
-              { Icon: MapPin, title: "Platform",      value: "AI Medical Assistant", sub: "Web platform — no app needed",      color: "from-blue-400 to-indigo-500" },
-              { Icon: Shield, title: "Privacy",       value: "100% Encrypted",       sub: "Your data is never sold or shared", color: "from-green-400 to-emerald-500" },
-            ].map(({ Icon, title, value, sub, color }) => (
-              <div key={title} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 flex items-center gap-4 hover:bg-white/15 transition-all">
+            {CONTACT_CARDS.map(({ Icon, key, color }) => (
+              <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 flex items-center gap-4 hover:bg-white/15 transition-all">
                 <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center shadow-md shrink-0`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-xs font-black text-white/40 uppercase tracking-wider">{title}</div>
-                  <div className="font-black text-white">{value}</div>
-                  <div className="text-xs text-white/40 mt-0.5">{sub}</div>
+                  <div className="text-xs font-black text-white/40 uppercase tracking-wider">{t(`landing.contact.cards.${key}.title`)}</div>
+                  <div className="font-black text-white">{t(`landing.contact.cards.${key}.value`)}</div>
+                  <div className="text-xs text-white/40 mt-0.5">{t(`landing.contact.cards.${key}.sub`)}</div>
                 </div>
               </div>
             ))}
@@ -324,43 +332,39 @@ function ContactView() {
           <div className="bg-white/10 backdrop-blur-md border-2 border-red-500/30 rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <Phone className="w-5 h-5 text-red-400" />
-              <h3 className="font-black text-white text-lg">Emergency Numbers</h3>
+              <h3 className="font-black text-white text-lg">{t("landing.contact.emergencyTitle")}</h3>
             </div>
             <div className="space-y-3">
-              {[["SAMU (Medical Emergency)", "15"], ["Fire Department", "18"], ["Police", "17"], ["Europe Emergency", "112"]].map(([l, n]) => (
-                <div key={l} className="flex items-center justify-between bg-white/8 border border-white/15 rounded-xl px-4 py-3">
-                  <span className="text-sm font-semibold text-white/80">{l}</span>
+              {EMERGENCY_NUMBERS.map(([key, n]) => (
+                <div key={key} className="flex items-center justify-between bg-white/8 border border-white/15 rounded-xl px-4 py-3">
+                  <span className="text-sm font-semibold text-white/80">{t(`landing.contact.numbers.${key}`)}</span>
                   <span className="text-red-400 font-black text-2xl">{n}</span>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-white/40 mt-4 text-center">In a medical emergency, do not use this platform. Call 112 immediately.</p>
+            <p className="text-xs text-white/40 mt-4 text-center">{t("landing.contact.emergencyNote")}</p>
           </div>
         </div>
 
         <div className="bg-white/10 backdrop-blur-md border border-amber-400/30 rounded-2xl p-7">
           <h3 className="font-black text-white text-lg mb-5 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-amber-400" /> Policies & Disclaimer
+            <Shield className="w-5 h-5 text-amber-400" /> {t("landing.contact.policiesTitle")}
           </h3>
           <div className="grid md:grid-cols-2 gap-4 mb-5">
-            {[
-              { title: "Data Privacy",      desc: "Your health data is encrypted end-to-end and never sold or shared with third parties." },
-              { title: "Not a Replacement", desc: "AI analysis is informational only. Always consult a licensed healthcare professional." },
-              { title: "Accuracy Notice",   desc: "Predictions are based on a real 4920-case dataset covering 41 diseases and 132 symptoms." },
-              { title: "Report Usage",      desc: "Generated PDF reports are for reference only and carry no medical-legal weight." },
-            ].map(({ title, desc }) => (
-              <div key={title} className="flex gap-3">
+            {POLICIES.map(key => (
+              <div key={key} className="flex gap-3">
                 <CheckCircle className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-black text-sm text-white">{title}</div>
-                  <div className="text-xs text-white/50 mt-0.5 leading-relaxed">{desc}</div>
+                  <div className="font-black text-sm text-white">{t(`landing.contact.policies.${key}.title`)}</div>
+                  <div className="text-xs text-white/50 mt-0.5 leading-relaxed">{t(`landing.contact.policies.${key}.desc`)}</div>
                 </div>
               </div>
             ))}
           </div>
           <div className="bg-red-500/15 border border-red-400/30 rounded-xl p-4 text-center">
             <p className="text-sm text-white/70 leading-relaxed">
-              <strong className="text-red-400">Medical Disclaimer:</strong> This platform is for informational purposes only. In case of emergency, call <strong className="text-white">112</strong>.
+              <strong className="text-red-400">{t("landing.contact.disclaimerLabel")}</strong>{" "}
+              <Trans i18nKey="landing.contact.disclaimer" components={{ strong: <strong className="text-white" /> }} />
             </p>
           </div>
         </div>

@@ -16,5 +16,6 @@ def medical_chat(
         message=body.message,
         history=body.history,
         context=body.context,
+        language=body.language,
     )
     return ChatResponse(**result)

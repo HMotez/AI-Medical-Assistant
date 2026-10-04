@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
 import {
   BarChart2, Activity, Users, Stethoscope, FileText,
@@ -41,6 +42,7 @@ function StatCard({ label, value, Icon, gradient, sub }) {
 }
 
 export default function AdminStats() {
+  const { t } = useTranslation();
   const [stats, setStats]     = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,16 +59,16 @@ export default function AdminStats() {
   );
 
   const urgencyData = [
-    { label: "Emergency", value: stats?.urgency_emergency ?? 0, color: "bg-red-500",    Icon: Zap,           cls: "urgency-emergency" },
-    { label: "High",      value: stats?.urgency_high      ?? 0, color: "bg-orange-500", Icon: AlertTriangle, cls: "urgency-high" },
-    { label: "Moderate",  value: stats?.urgency_moderate  ?? 0, color: "bg-amber-500",  Icon: AlertCircle,   cls: "urgency-moderate" },
-    { label: "Low",       value: stats?.urgency_low       ?? 0, color: "bg-green-500",  Icon: CheckCircle,   cls: "urgency-low" },
+    { key: "emergency", value: stats?.urgency_emergency ?? 0, color: "bg-red-500",    Icon: Zap,           cls: "urgency-emergency" },
+    { key: "high",      value: stats?.urgency_high      ?? 0, color: "bg-orange-500", Icon: AlertTriangle, cls: "urgency-high" },
+    { key: "moderate",  value: stats?.urgency_moderate  ?? 0, color: "bg-amber-500",  Icon: AlertCircle,   cls: "urgency-moderate" },
+    { key: "low",       value: stats?.urgency_low       ?? 0, color: "bg-green-500",  Icon: CheckCircle,   cls: "urgency-low" },
   ];
 
   const roleData = [
-    { label: "Patients", value: stats?.total_patients ?? 0, color: "bg-teal-500" },
-    { label: "Doctors",  value: stats?.total_doctors  ?? 0, color: "bg-blue-500" },
-    { label: "Admins",   value: stats?.total_admins   ?? 0, color: "bg-purple-500" },
+    { label: t("admin.stats.rolesPlural.patient"), value: stats?.total_patients ?? 0, color: "bg-teal-500" },
+    { label: t("admin.stats.rolesPlural.doctor"),  value: stats?.total_doctors  ?? 0, color: "bg-blue-500" },
+    { label: t("admin.stats.rolesPlural.admin"),   value: stats?.total_admins   ?? 0, color: "bg-purple-500" },
   ];
 
   const maxUrgency = Math.max(...urgencyData.map(d => d.value), 1);
@@ -81,9 +83,9 @@ export default function AdminStats() {
           <BarChart2 className="w-7 h-7 text-white" />
         </div>
         <div>
-          <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">Administration</p>
-          <h1 className="text-2xl font-black text-white">Platform Statistics</h1>
-          <p className="text-white/50 text-sm mt-0.5">Real-time overview of all platform activity</p>
+          <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">{t("admin.administration")}</p>
+          <h1 className="text-2xl font-black text-white">{t("admin.stats.title")}</h1>
+          <p className="text-white/50 text-sm mt-0.5">{t("admin.stats.subtitle")}</p>
         </div>
       </div>
 
@@ -91,10 +93,10 @@ export default function AdminStats() {
 
         {/* KPI cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total Users"  value={stats?.total_users}    Icon={Users}       gradient="from-blue-500 to-blue-700"    sub="registered accounts" />
-          <StatCard label="Analyses"     value={stats?.total_analyses} Icon={Activity}    gradient="from-teal-500 to-teal-700"    sub="AI analyses run" />
-          <StatCard label="Doctors"      value={stats?.total_doctors}  Icon={Stethoscope} gradient="from-purple-500 to-purple-700" sub="medical professionals" />
-          <StatCard label="Reports"      value={stats?.total_reports}  Icon={FileText}    gradient="from-green-500 to-green-700"   sub="PDF generated" />
+          <StatCard label={t("admin.stats.cards.users.label")}    value={stats?.total_users}    Icon={Users}       gradient="from-blue-500 to-blue-700"    sub={t("admin.stats.cards.users.sub")} />
+          <StatCard label={t("admin.stats.cards.analyses.label")} value={stats?.total_analyses} Icon={Activity}    gradient="from-teal-500 to-teal-700"    sub={t("admin.stats.cards.analyses.sub")} />
+          <StatCard label={t("admin.stats.cards.doctors.label")}  value={stats?.total_doctors}  Icon={Stethoscope} gradient="from-purple-500 to-purple-700" sub={t("admin.stats.cards.doctors.sub")} />
+          <StatCard label={t("admin.stats.cards.reports.label")}  value={stats?.total_reports}  Icon={FileText}    gradient="from-green-500 to-green-700"   sub={t("admin.stats.cards.reports.sub")} />
         </div>
 
         {/* Charts row */}
@@ -103,15 +105,15 @@ export default function AdminStats() {
           {/* Urgency distribution */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
             <h2 className="font-black text-white text-lg mb-2 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-red-400" /> Urgency Distribution
+              <TrendingUp className="w-5 h-5 text-red-400" /> {t("admin.stats.urgencyTitle")}
             </h2>
-            <p className="text-xs text-white/40 mb-6">Breakdown of all analyses by urgency level</p>
+            <p className="text-xs text-white/40 mb-6">{t("admin.stats.urgencyText")}</p>
             <div className="space-y-4">
-              {urgencyData.map(({ label, value, color, Icon, cls }) => (
-                <div key={label}>
+              {urgencyData.map(({ key, value, color, Icon, cls }) => (
+                <div key={key}>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className={`${cls} text-xs`}>
-                      <Icon className="w-3 h-3" /> {label}
+                      <Icon className="w-3 h-3" /> {t(`common.urgency.${key}`)}
                     </span>
                     <span className="text-sm font-black text-white">{value}</span>
                   </div>
@@ -125,7 +127,7 @@ export default function AdminStats() {
               ))}
             </div>
             <div className="mt-5 pt-4 border-t border-white/10 flex justify-between items-center">
-              <span className="text-sm font-bold text-white/50">Total Analyses</span>
+              <span className="text-sm font-bold text-white/50">{t("admin.stats.totalAnalyses")}</span>
               <span className="text-xl font-black text-white">{stats?.total_analyses ?? 0}</span>
             </div>
           </div>
@@ -133,9 +135,9 @@ export default function AdminStats() {
           {/* User roles */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
             <h2 className="font-black text-white text-lg mb-2 flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-400" /> User Role Breakdown
+              <Users className="w-5 h-5 text-blue-400" /> {t("admin.stats.rolesTitle")}
             </h2>
-            <p className="text-xs text-white/40 mb-6">Distribution of users by role</p>
+            <p className="text-xs text-white/40 mb-6">{t("admin.stats.rolesText")}</p>
             <div className="space-y-5">
               {roleData.map(({ label, value, color }) => (
                 <Bar key={label} label={label} value={value} max={maxRole} color={color} />
@@ -157,14 +159,14 @@ export default function AdminStats() {
         {/* Platform health */}
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
           <h2 className="font-black text-white text-lg mb-5 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-teal-400" /> Platform Health
+            <Activity className="w-5 h-5 text-teal-400" /> {t("admin.stats.health")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Avg analyses / patient", value: stats?.total_patients > 0 ? ((stats?.total_analyses || 0) / stats.total_patients).toFixed(1) : "0", grad: "from-teal-500/20 to-teal-600/20", border: "border-teal-400/30", text: "text-teal-300" },
-              { label: "Report generation rate", value: stats?.total_analyses > 0 ? `${Math.round(((stats?.total_reports || 0) / stats.total_analyses) * 100)}%` : "0%", grad: "from-blue-500/20 to-blue-600/20", border: "border-blue-400/30", text: "text-blue-300" },
-              { label: "Emergency rate",          value: stats?.total_analyses > 0 ? `${Math.round(((stats?.urgency_emergency || 0) / stats.total_analyses) * 100)}%` : "0%", grad: "from-red-500/20 to-red-600/20", border: "border-red-400/30", text: "text-red-300" },
-              { label: "Doctor coverage",         value: stats?.total_doctors > 0 && stats?.total_patients > 0 ? `1:${Math.round(stats.total_patients / stats.total_doctors)}` : "N/A", grad: "from-purple-500/20 to-purple-600/20", border: "border-purple-400/30", text: "text-purple-300" },
+              { label: t("admin.stats.healthItems.avg"), value: stats?.total_patients > 0 ? ((stats?.total_analyses || 0) / stats.total_patients).toFixed(1) : "0", grad: "from-teal-500/20 to-teal-600/20", border: "border-teal-400/30", text: "text-teal-300" },
+              { label: t("admin.stats.healthItems.reportRate"), value: stats?.total_analyses > 0 ? `${Math.round(((stats?.total_reports || 0) / stats.total_analyses) * 100)}%` : "0%", grad: "from-blue-500/20 to-blue-600/20", border: "border-blue-400/30", text: "text-blue-300" },
+              { label: t("admin.stats.healthItems.emergencyRate"), value: stats?.total_analyses > 0 ? `${Math.round(((stats?.urgency_emergency || 0) / stats.total_analyses) * 100)}%` : "0%", grad: "from-red-500/20 to-red-600/20", border: "border-red-400/30", text: "text-red-300" },
+              { label: t("admin.stats.healthItems.coverage"), value: stats?.total_doctors > 0 && stats?.total_patients > 0 ? `1:${Math.round(stats.total_patients / stats.total_doctors)}` : t("admin.stats.na"), grad: "from-purple-500/20 to-purple-600/20", border: "border-purple-400/30", text: "text-purple-300" },
             ].map(({ label, value, grad, border, text }) => (
               <div key={label} className={`bg-gradient-to-br ${grad} border ${border} rounded-2xl p-4 text-center`}>
                 <div className={`text-2xl font-black mb-1 ${text}`}>{value}</div>

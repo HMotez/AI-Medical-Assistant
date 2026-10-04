@@ -1,17 +1,14 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
+import { useMedicalLabels } from "../../i18n/medical";
+import { currentLang, dateLocale } from "../../i18n";
 import {
   Bot, Send, Loader2, User, RefreshCw, AlertTriangle,
   Stethoscope, Sparkles, MessageSquare
 } from "lucide-react";
 
-const QUICK_PROMPTS = [
-  "What does my analysis result mean?",
-  "When should I see a doctor urgently?",
-  "Can you explain my top predicted condition?",
-  "What lifestyle changes can help?",
-  "Quels sont les symptômes à surveiller ?",
-];
+const QUICK_PROMPTS = ["meaning", "urgent", "explain", "lifestyle", "watch"];
 
 function Bubble({ msg }) {
   const isUser = msg.role === "user";
@@ -37,7 +34,7 @@ function Bubble({ msg }) {
         </div>
         {msg.timestamp && (
           <span className="text-[10px] text-white/25 px-1">
-            {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {new Date(msg.timestamp).toLocaleTimeString(dateLocale(), { hour: "2-digit", minute: "2-digit" })}
           </span>
         )}
       </div>
@@ -62,12 +59,11 @@ function TypingIndicator() {
 }
 
 export default function MedicalChat() {
+  const { t } = useTranslation();
+  const labels = useMedicalLabels();
+  // The opening message is stored as a translation key so it follows language changes
   const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content: "Bonjour ! Je suis MedAI, votre assistant médical intelligent 🩺\n\nJe peux vous aider à comprendre vos symptômes, interpréter vos résultats d'analyse et répondre à vos questions médicales.\n\nComment puis-je vous aider aujourd'hui ?",
-      timestamp: new Date().toISOString(),
-    },
+    { role: "assistant", i18nKey: "chat.welcome", timestamp: new Date().toISOString() },
   ]);
   const [input, setInput]       = useState("");
   const [loading, setLoading]   = useState(false);
@@ -112,11 +108,12 @@ export default function MedicalChat() {
     setLoading(true);
 
     try {
-      const history = updated.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+      const history = updated.slice(0, -1).map(m => ({ role: m.role, content: m.i18nKey ? t(m.i18nKey) : m.content }));
       const res = await axiosClient.post("/api/chat/", {
         message: userMsg,
         history,
         context,
+        language: currentLang(),
       });
       setMessages(prev => [...prev, {
         role: "assistant",
@@ -127,7 +124,7 @@ export default function MedicalChat() {
     } catch {
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: "Désolé, une erreur s'est produite. Veuillez réessayer.",
+        i18nKey: "chat.error",
         timestamp: new Date().toISOString(),
       }]);
     } finally {
@@ -139,7 +136,7 @@ export default function MedicalChat() {
   const reset = () => {
     setMessages([{
       role: "assistant",
-      content: "Conversation réinitialisée. Comment puis-je vous aider ?",
+      i18nKey: "chat.reset",
       timestamp: new Date().toISOString(),
     }]);
   };
@@ -155,17 +152,17 @@ export default function MedicalChat() {
             <MessageSquare className="w-7 h-7 text-purple-300" />
           </div>
           <div>
-            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">AI Assistant</p>
+            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">{t("chat.assistant")}</p>
             <h1 className="text-2xl font-black text-white flex items-center gap-2">
-              Medical Chat
+              {t("chat.title")}
               <span className="inline-flex items-center gap-1 bg-purple-500/20 border border-purple-400/30 text-purple-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
                 <Sparkles className="w-2.5 h-2.5" /> AI
               </span>
             </h1>
-            <p className="text-white/40 text-xs mt-0.5">Ask anything about your health</p>
+            <p className="text-white/40 text-xs mt-0.5">{t("chat.subtitle")}</p>
           </div>
         </div>
-        <button onClick={reset} title="Clear chat"
+        <button onClick={reset} title={t("chat.clear")} aria-label={t("chat.clear")}
           className="w-9 h-9 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-all">
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -176,8 +173,8 @@ export default function MedicalChat() {
         <div className="shrink-0 mb-4 bg-teal-500/10 border border-teal-400/25 rounded-xl px-4 py-2.5 flex items-center gap-3">
           <Stethoscope className="w-4 h-4 text-teal-400 shrink-0" />
           <p className="text-xs text-teal-200 font-medium">
-            Contexte chargé : <strong>{context.top_disease}</strong>
-            {context.urgency && <> · Urgence : <strong className="capitalize">{context.urgency}</strong></>}
+            {t("chat.contextLoaded")} <strong>{labels.disease(context.top_disease)}</strong>
+            {context.urgency && <> · {t("chat.urgency")} <strong>{t(`common.urgency.${context.urgency}`)}</strong></>}
           </p>
         </div>
       )}
@@ -185,9 +182,9 @@ export default function MedicalChat() {
       {/* Quick prompts */}
       <div className="shrink-0 flex flex-wrap gap-2 mb-4">
         {QUICK_PROMPTS.map(p => (
-          <button key={p} onClick={() => send(p)} disabled={loading}
+          <button key={p} onClick={() => send(t(`chat.prompts.${p}`))} disabled={loading}
             className="text-xs font-semibold text-white/60 bg-white/8 border border-white/15 px-3 py-1.5 rounded-full hover:bg-white/15 hover:text-white transition-all disabled:opacity-40">
-            {p}
+            {t(`chat.prompts.${p}`)}
           </button>
         ))}
       </div>
@@ -195,7 +192,7 @@ export default function MedicalChat() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 pb-4 min-h-0
         bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-sm">
-        {messages.map((m, i) => <Bubble key={i} msg={m} />)}
+        {messages.map((m, i) => <Bubble key={i} msg={m.i18nKey ? { ...m, content: t(m.i18nKey) } : m} />)}
         {loading && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
@@ -205,7 +202,7 @@ export default function MedicalChat() {
         {messages.some(m => m.role === "assistant" && m.model === "rule-based") && (
           <div className="flex items-center gap-2 text-amber-300/70 text-xs mb-2 px-1">
             <AlertTriangle className="w-3.5 h-3.5" />
-            Mode basique actif. Ajoutez ANTHROPIC_API_KEY dans backend/.env pour l'IA complète.
+            {t("chat.basicMode")}
           </div>
         )}
         <div className="flex gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2">
@@ -215,11 +212,12 @@ export default function MedicalChat() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Décrivez vos symptômes ou posez une question… (Entrée pour envoyer)"
+            placeholder={t("chat.placeholder")}
+            aria-label={t("chat.placeholder")}
             className="flex-1 bg-transparent text-white text-sm placeholder-white/30 resize-none focus:outline-none py-2 px-2 leading-relaxed"
             style={{ maxHeight: "120px", overflowY: "auto" }}
           />
-          <button onClick={() => send()} disabled={!input.trim() || loading}
+          <button onClick={() => send()} disabled={!input.trim() || loading} aria-label={t("chat.send")}
             className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all
               disabled:opacity-40 disabled:cursor-not-allowed
               bg-gradient-to-br from-teal-500 to-teal-600 text-white hover:from-teal-400 hover:to-teal-500
@@ -230,7 +228,7 @@ export default function MedicalChat() {
           </button>
         </div>
         <p className="text-center text-[10px] text-white/20 mt-2">
-          MedAI fournit des informations générales uniquement — consultez toujours un médecin.
+          {t("chat.footer")}
         </p>
       </div>
     </div>

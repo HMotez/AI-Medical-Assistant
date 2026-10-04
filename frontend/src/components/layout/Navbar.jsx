@@ -1,14 +1,16 @@
 import { useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
+import LanguageSwitcher from "../LanguageSwitcher";
 import { Stethoscope, Menu, X, User, LogOut, LayoutDashboard, Activity } from "lucide-react";
 
 const NAV_LINKS = [
-  { label: "Home",        view: null },
-  { label: "Services",    view: "services" },
-  { label: "Specialties", view: "departments" },
-  { label: "Contact",     view: "contact" },
+  { key: "home",        view: null },
+  { key: "services",    view: "services" },
+  { key: "specialties", view: "departments" },
+  { key: "contact",     view: "contact" },
 ];
 
 /* 3-D tilt card hook */
@@ -30,6 +32,7 @@ function use3DTilt(strength = 12) {
 }
 
 export default function Navbar() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
@@ -155,9 +158,9 @@ export default function Navbar() {
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  AI MEDICAL
+                  {t("common.brand")}
                 </div>
-                <div className="text-[10px] text-gray-400 font-medium -mt-0.5 uppercase tracking-widest">Assistant</div>
+                <div className="text-[10px] text-gray-400 font-medium -mt-0.5 uppercase tracking-widest">{t("common.brandSub")}</div>
               </div>
             </button>
 
@@ -165,17 +168,18 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-1" style={{ perspective: "800px" }}>
               {NAV_LINKS.map(l => (
                 <button
-                  key={l.label}
+                  key={l.key}
                   onClick={() => goTo(l.view)}
                   className={`nav-link-3d text-sm font-semibold px-5 py-2 rounded-full ${isActive(l.view) ? "active-link" : "text-gray-600"}`}
                 >
-                  {l.label}
+                  {t(`nav.${l.key}`)}
                 </button>
               ))}
             </div>
 
             {/* ── Desktop right ── */}
             <div className="hidden md:flex items-center gap-3">
+              <LanguageSwitcher />
               {user ? (
                 <>
                   <span
@@ -191,12 +195,12 @@ export default function Navbar() {
                   <Link to={dashboardPath}
                     className="nav-link-3d flex items-center gap-1.5 text-teal-700 font-bold text-sm px-4 py-2 rounded-full"
                     style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)" }}>
-                    <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    <LayoutDashboard className="w-4 h-4" /> {t("common.dashboard")}
                   </Link>
                   <button onClick={handleLogout}
                     className="nav-link-3d flex items-center gap-1.5 text-gray-500 font-semibold text-sm px-4 py-2 rounded-full"
                     style={{ border: "1.5px solid #e5e7eb" }}>
-                    <LogOut className="w-4 h-4" /> Logout
+                    <LogOut className="w-4 h-4" /> {t("common.logout")}
                   </button>
                 </>
               ) : (
@@ -204,12 +208,12 @@ export default function Navbar() {
                   <Link to="/login"
                     className="nav-link-3d flex items-center gap-1.5 text-sm font-semibold text-gray-600 px-4 py-2 rounded-full"
                     style={{ border: "1.5px solid #e5e7eb" }}>
-                    <User className="w-4 h-4" /> Login
+                    <User className="w-4 h-4" /> {t("common.login")}
                   </Link>
                   <Link to="/register"
                     className="cta-3d inline-flex items-center gap-1.5 text-white font-black text-sm px-6 py-2.5 rounded-full"
                     style={{ background: "linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)" }}>
-                    <Activity className="w-4 h-4" /> Check Symptoms
+                    <Activity className="w-4 h-4" /> {t("nav.checkSymptoms")}
                   </Link>
                 </>
               )}
@@ -218,6 +222,7 @@ export default function Navbar() {
             {/* ── Mobile hamburger ── */}
             <button
               onClick={() => setOpen(!open)}
+              aria-label={open ? t("sidebar.closeMenu") : t("sidebar.openMenu")}
               className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all"
               style={{
                 background: open ? "rgba(20,184,166,0.12)" : "rgba(0,0,0,0.03)",
@@ -244,27 +249,28 @@ export default function Navbar() {
             }}
           >
             {NAV_LINKS.map((l, i) => (
-              <button key={l.label} onClick={() => goTo(l.view)}
+              <button key={l.key} onClick={() => goTo(l.view)}
                 className="block w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
                 style={{
                   animationDelay: `${i * 50}ms`,
                   background: isActive(l.view) ? "linear-gradient(135deg, #14b8a6, #0d9488)" : "transparent",
                   color: isActive(l.view) ? "white" : "#374151",
                 }}>
-                {l.label}
+                {t(`nav.${l.key}`)}
               </button>
             ))}
             <div className="pt-3 space-y-2 border-t" style={{ borderColor: "rgba(20,184,166,0.12)" }}>
+              <div className="flex justify-center pb-1"><LanguageSwitcher /></div>
               {user ? (
                 <>
                   <Link to={dashboardPath} onClick={() => setOpen(false)}
                     className="flex items-center justify-center gap-2 w-full font-bold text-sm py-2.5 rounded-xl"
                     style={{ background: "rgba(20,184,166,0.1)", color: "#0d9488", border: "1px solid rgba(20,184,166,0.2)" }}>
-                    <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    <LayoutDashboard className="w-4 h-4" /> {t("common.dashboard")}
                   </Link>
                   <button onClick={handleLogout}
                     className="flex items-center justify-center gap-2 w-full border-2 border-gray-200 text-gray-600 font-semibold text-sm py-2.5 rounded-xl">
-                    <LogOut className="w-4 h-4" /> Logout
+                    <LogOut className="w-4 h-4" /> {t("common.logout")}
                   </button>
                 </>
               ) : (
@@ -272,12 +278,12 @@ export default function Navbar() {
                   <Link to="/login" onClick={() => setOpen(false)}
                     className="flex items-center justify-center gap-2 w-full font-bold text-sm py-2.5 rounded-xl"
                     style={{ border: "1.5px solid #14b8a6", color: "#0d9488" }}>
-                    <User className="w-4 h-4" /> Login
+                    <User className="w-4 h-4" /> {t("common.login")}
                   </Link>
                   <Link to="/register" onClick={() => setOpen(false)}
                     className="cta-3d flex items-center justify-center gap-2 w-full text-white font-black text-sm py-3 rounded-xl"
                     style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}>
-                    Check Symptoms
+                    {t("nav.checkSymptoms")}
                   </Link>
                 </>
               )}

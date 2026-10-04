@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timezone
 from pathlib import Path
-from app.services.pdf_service import generate, REPORTS_DIR
+from app.services.pdf_service import generate, report_filename
 
 
 SAMPLE_PREDICTIONS = [
@@ -13,7 +13,7 @@ SAMPLE_PREDICTIONS = [
 SAMPLE_EXPLANATION = '{"itching": 0.412, "skin_rash": 0.318, "nodal_skin_eruptions": 0.201}'
 
 
-def test_pdf_generates_file():
+def test_pdf_generates_file(tmp_path):
     path = generate(
         analysis_id=1,
         patient_name="Ahmed Benali",
@@ -27,14 +27,14 @@ def test_pdf_generates_file():
         recommended_specialist="Dermatologue",
         explanation_json=SAMPLE_EXPLANATION,
         created_at=datetime.now(timezone.utc),
+        output_path=tmp_path / "report.pdf",
     )
     assert path.exists()
     assert path.suffix == ".pdf"
     assert path.stat().st_size > 1_000   # at least 1 KB
-    path.unlink()                         # cleanup
 
 
-def test_pdf_emergency_urgency():
+def test_pdf_emergency_urgency(tmp_path):
     path = generate(
         analysis_id=2,
         patient_name="Sara Mansouri",
@@ -50,13 +50,13 @@ def test_pdf_emergency_urgency():
         recommended_specialist="Cardiologue",
         explanation_json=None,
         created_at=datetime.now(timezone.utc),
+        output_path=tmp_path / "report.pdf",
     )
     assert path.exists()
     assert path.stat().st_size > 1_000
-    path.unlink()
 
 
-def test_pdf_missing_optional_fields():
+def test_pdf_missing_optional_fields(tmp_path):
     """Should not crash when age/gender/explanation are None."""
     path = generate(
         analysis_id=3,
@@ -71,6 +71,58 @@ def test_pdf_missing_optional_fields():
         recommended_specialist="Generaliste",
         explanation_json=None,
         created_at=datetime.now(timezone.utc),
+        output_path=tmp_path / "report.pdf",
     )
     assert path.exists()
-    path.unlink()
+
+
+def test_pdf_handles_non_latin1_text(tmp_path):
+    """Typographic dashes/quotes and emoji must not crash the Helvetica-based report."""
+    path = generate(
+        analysis_id=4,
+        patient_name="Zoë “Test” — 🙂",
+        patient_age=40,
+        patient_gender="female",
+        symptoms=["high_fever", "chills"],
+        symptom_duration="1–3 days",
+        severity=6,
+        predictions=SAMPLE_PREDICTIONS,
+        urgency_level="high",
+        recommended_specialist="Infectiologue",
+        explanation_json=SAMPLE_EXPLANATION,
+        created_at=datetime.now(timezone.utc),
+        output_path=tmp_path / "report.pdf",
+    )
+    assert path.exists()
+
+
+@pytest.mark.parametrize("lang, expected", [
+    ("fr", ["Symptômes déclarés", "Mal de tête", "Dermatologue", "1 à 3 jours", "Jaunissement"]),
+    ("en", ["Reported symptoms", "Headache", "Dermatologist", "1-3 days", "Yellowing"]),
+])
+def test_pdf_language(tmp_path, monkeypatch, lang, expected):
+    from app.services import pdf_service
+    written = []
+    original = pdf_service.MedicalPDF.normalize_text
+    def capture(self, text):
+        written.append(str(text))
+        return original(self, text)
+    monkeypatch.setattr(pdf_service.MedicalPDF, "normalize_text", capture)
+
+    generate(
+        analysis_id=5, patient_name="Test", patient_age=30, patient_gender="female",
+        symptoms=["headache", "high_fever"], symptom_duration="1_3d", severity=4,
+        predictions=SAMPLE_PREDICTIONS, urgency_level="moderate",
+        recommended_specialist="Dermatologue", explanation_json=SAMPLE_EXPLANATION,
+        created_at=datetime.now(timezone.utc), lang=lang,
+        red_flags=[{"code": "jaundice", "level": "moderate", "message": "x"}],
+        output_path=tmp_path / "report.pdf",
+    )
+    text = "\n".join(written)
+    for fragment in expected:
+        assert fragment in text, fragment
+
+
+def test_report_filename_is_per_language():
+    assert report_filename(7, "en") != report_filename(7, "fr")
+    assert report_filename(7, "de") == report_filename(7, "fr")   # unsupported → default

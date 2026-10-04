@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.schemas.analysis import SymptomTextIn, SymptomExtractionOut
 from app.api.routes import auth, users, analysis, reports, doctor, admin, chat
 
 
@@ -56,3 +57,20 @@ def list_symptoms():
         return {"symptoms": get_all_symptoms()}
     except Exception:
         return {"symptoms": []}
+
+
+@app.get("/api/diseases")
+def list_diseases():
+    """Every disease the model knows, with its specialist and base urgency."""
+    try:
+        from app.services.ml_service import list_diseases as diseases
+        return {"diseases": diseases()}
+    except Exception:
+        return {"diseases": []}
+
+
+@app.post("/api/symptoms/extract", response_model=SymptomExtractionOut)
+def extract_symptoms(data: SymptomTextIn):
+    """Turn a free-text description (English or French) into known symptom names."""
+    from app.services.ml_service import extract_symptoms as extract
+    return extract(data.text)

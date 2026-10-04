@@ -1,24 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
-import {
-  Clock, ChevronRight, Activity, Trash2, AlertCircle,
-  AlertTriangle, CheckCircle, Zap, Search, Loader2, Plus
-} from "lucide-react";
-
-const URGENCY_META = {
-  low:       { label: "Low",       cls: "urgency-low",       Icon: CheckCircle },
-  moderate:  { label: "Moderate",  cls: "urgency-moderate",  Icon: AlertCircle },
-  high:      { label: "High",      cls: "urgency-high",      Icon: AlertTriangle },
-  emergency: { label: "Emergency", cls: "urgency-emergency", Icon: Zap },
-};
-
-function UrgencyBadge({ level }) {
-  const { label, cls, Icon } = URGENCY_META[level] || URGENCY_META.low;
-  return <span className={cls}><Icon className="w-3 h-3" /> {label}</span>;
-}
+import UrgencyBadge from "../../components/UrgencyBadge";
+import { useMedicalLabels, searchable } from "../../i18n/medical";
+import { dateLocale } from "../../i18n";
+import { Clock, ChevronRight, Activity, Trash2, Search, Loader2, Plus } from "lucide-react";
 
 export default function History() {
+  const { t } = useTranslation();
+  const labels = useMedicalLabels();
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [query, setQuery]       = useState("");
@@ -32,7 +23,7 @@ export default function History() {
   useEffect(() => { load(); }, []);
 
   const remove = async (id) => {
-    if (!window.confirm("Delete this analysis permanently?")) return;
+    if (!window.confirm(t("history.confirmDelete"))) return;
     setDeleting(id);
     try {
       await axiosClient.delete(`/api/analysis/${id}`);
@@ -40,8 +31,10 @@ export default function History() {
     } finally { setDeleting(null); }
   };
 
+  // Search matches the disease name in the current language and in English
+  const q = searchable(query);
   const filtered = analyses.filter(a =>
-    !query || (a.top_disease || "").toLowerCase().includes(query.toLowerCase())
+    !q || [a.top_disease, a.top_disease && labels.disease(a.top_disease)].some(n => searchable(n).includes(q))
   );
 
   return (
@@ -54,13 +47,13 @@ export default function History() {
             <Clock className="w-7 h-7 text-white" />
           </div>
           <div>
-            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">Patient Records</p>
-            <h1 className="text-2xl font-black text-white">Analysis History</h1>
-            <p className="text-white/50 text-sm mt-0.5">{analyses.length} total analyses</p>
+            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">{t("history.records")}</p>
+            <h1 className="text-2xl font-black text-white">{t("history.title")}</h1>
+            <p className="text-white/50 text-sm mt-0.5">{t("history.total", { count: analyses.length })}</p>
           </div>
         </div>
         <Link to="/patient/analyze" className="btn-primary text-sm gap-2 hidden sm:flex">
-          <Plus className="w-4 h-4" /> New Analysis
+          <Plus className="w-4 h-4" /> {t("common.newAnalysis")}
         </Link>
       </div>
 
@@ -69,7 +62,7 @@ export default function History() {
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-          <input type="text" placeholder="Search by disease name..."
+          <input type="text" placeholder={t("history.searchPlaceholder")} aria-label={t("history.searchPlaceholder")}
             value={query} onChange={e => setQuery(e.target.value)}
             className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 text-sm font-medium focus:outline-none focus:border-teal-400/60 focus:bg-white/15 transition-all" />
         </div>
@@ -84,21 +77,21 @@ export default function History() {
               <Activity className="w-8 h-8 text-white/30" />
             </div>
             <p className="font-black text-white/70 text-lg mb-1">
-              {query ? "No results found" : "No analyses yet"}
+              {query ? t("history.noResults") : t("common.noAnalyses")}
             </p>
             <p className="text-white/40 text-sm mb-6">
-              {query ? "Try a different search term." : "Start your first analysis right now."}
+              {query ? t("history.tryOther") : t("history.startNow")}
             </p>
             {!query && (
               <Link to="/patient/analyze" className="btn-primary inline-flex gap-2">
-                <Plus className="w-4 h-4" /> Get Started
+                <Plus className="w-4 h-4" /> {t("history.getStarted")}
               </Link>
             )}
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-              <span className="font-black text-white">{filtered.length} analyses</span>
+              <span className="font-black text-white">{t("history.count", { count: filtered.length })}</span>
             </div>
             <div className="divide-y divide-white/5">
               {filtered.map(a => (
@@ -108,21 +101,21 @@ export default function History() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-white text-sm">
-                      {a.top_disease || "Analysis #" + a.id}
+                      {a.top_disease ? labels.disease(a.top_disease) : t("common.analysisNumber", { id: a.id })}
                     </div>
                     <div className="text-xs text-white/40 mt-0.5">
-                      {new Date(a.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+                      {new Date(a.created_at).toLocaleString(dateLocale(), { dateStyle: "medium", timeStyle: "short" })}
                     </div>
                   </div>
                   <UrgencyBadge level={a.urgency_level} />
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => remove(a.id)} disabled={deleting === a.id}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <button onClick={() => remove(a.id)} disabled={deleting === a.id} aria-label={t("history.deleteLabel")}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50">
                       {deleting === a.id
                         ? <Loader2 className="w-4 h-4 animate-spin" />
                         : <Trash2 className="w-4 h-4" />}
                     </button>
-                    <Link to={`/patient/results/${a.id}`}
+                    <Link to={`/patient/results/${a.id}`} aria-label={t("history.openLabel")}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-teal-300 hover:bg-teal-500/20 transition-all">
                       <ChevronRight className="w-4 h-4" />
                     </Link>

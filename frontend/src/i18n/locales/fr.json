@@ -1,0 +1,687 @@
+{
+  "common": {
+    "language": "Langue",
+    "brand": "AI MEDICAL",
+    "brandSub": "Assistant",
+    "appName": "Assistant Médical IA",
+    "loading": "Chargement...",
+    "dashboard": "Tableau de bord",
+    "logout": "Déconnexion",
+    "signOut": "Se déconnecter",
+    "login": "Connexion",
+    "back": "Retour",
+    "user": "Utilisateur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "retry": "Réessayer",
+    "unknown": "Inconnu",
+    "notSet": "Non renseigné",
+    "optional": "(facultatif)",
+    "roles": {
+      "patient": "Patient",
+      "doctor": "Médecin",
+      "admin": "Admin"
+    },
+    "gender": {
+      "male": "Homme",
+      "female": "Femme",
+      "other": "Autre"
+    },
+    "urgency": {
+      "low": "Faible",
+      "moderate": "Modérée",
+      "high": "Élevée",
+      "emergency": "Urgence"
+    },
+    "urgencyLong": {
+      "low": "Urgence faible",
+      "moderate": "Modérée",
+      "high": "Urgence élevée",
+      "emergency": "URGENCE"
+    },
+    "disclaimer": "Cette analyse est fournie <strong>à titre informatif uniquement</strong>. Consultez toujours un professionnel de santé qualifié pour un avis médical, un diagnostic ou un traitement.",
+    "newAnalysis": "Nouvelle analyse",
+    "analysisNumber": "Analyse n°{{id}}",
+    "viewAll": "Tout voir",
+    "noAnalyses": "Aucune analyse pour le moment",
+    "durations": {
+      "lt_1d": "Moins d'un jour",
+      "1_3d": "1 à 3 jours",
+      "4_7d": "4 à 7 jours",
+      "1_4w": "1 à 4 semaines",
+      "gt_1m": "Plus d'un mois"
+    }
+  },
+  "nav": {
+    "home": "Accueil",
+    "services": "Services",
+    "specialties": "Spécialités",
+    "contact": "Contact",
+    "checkSymptoms": "Vérifier mes symptômes"
+  },
+  "sidebar": {
+    "mainMenu": "Menu principal",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "patient": {
+      "dashboard": "Tableau de bord",
+      "symptomChecker": "Vérificateur de symptômes",
+      "history": "Mon historique",
+      "trends": "Évolution santé",
+      "chat": "Chat MedAI",
+      "profile": "Mon profil"
+    },
+    "doctor": {
+      "dashboard": "Tableau de bord"
+    },
+    "admin": {
+      "dashboard": "Tableau de bord",
+      "stats": "Statistiques",
+      "diseases": "Maladies"
+    }
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "text": "La page que vous cherchez n'existe pas ou a été déplacée. Revenons sur la bonne voie.",
+    "home": "Retour à l'accueil",
+    "dashboard": "Mon tableau de bord"
+  },
+  "login": {
+    "badge": "Plateforme médicale sécurisée",
+    "heroTitle1": "Votre santé,",
+    "heroTitle2": "analysée par l'IA",
+    "heroText": "Obtenez une analyse instantanée de vos symptômes, des recommandations de spécialistes et des rapports médicaux téléchargeables.",
+    "stats": {
+      "patients": "Patients",
+      "diseases": "Maladies",
+      "accuracy": "Précision top 3",
+      "private": "Confidentiel"
+    },
+    "testimonial": "« AI Medical m'a aidée à identifier mon problème avant mon rendez-vous. Le rapport que j'ai apporté à mon médecin était très détaillé. »",
+    "verifiedPatient": "Patiente vérifiée",
+    "footer": "Chiffrement 256 bits · Conforme HIPAA · Aucun partage de données",
+    "title": "Bon retour",
+    "subtitle": "Connectez-vous pour accéder à votre espace médical",
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "votre@email.com",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "submitting": "Connexion...",
+    "error": "E-mail ou mot de passe incorrect.",
+    "demoAccounts": "Comptes de démonstration",
+    "noAccount": "Pas encore de compte ?",
+    "registerLink": "Inscrivez-vous gratuitement"
+  },
+  "register": {
+    "badge": "Gratuit pour toujours",
+    "heroTitle1": "Commencez à analyser",
+    "heroTitle2": "votre santé dès aujourd'hui",
+    "heroText": "Rejoignez des milliers de patients qui font confiance à AI Medical pour une analyse rapide, confidentielle et précise de leurs symptômes.",
+    "perks": {
+      "analysis": "Analyse instantanée des symptômes par IA",
+      "reports": "Rapports médicaux PDF professionnels",
+      "tracking": "Suivez l'évolution de votre santé",
+      "privacy": "100 % confidentiel — aucun partage de données"
+    },
+    "privacyTitle": "Confidentialité de niveau médical",
+    "privacyText": "Vos données de santé sont chiffrées de bout en bout, jamais vendues, jamais partagées. Vos données vous appartiennent.",
+    "footer": "Sans carte bancaire · Sans frais cachés · Résiliable à tout moment",
+    "title": "Créez votre compte",
+    "subtitle": "Inscription gratuite — 30 secondes",
+    "fullName": "Nom complet",
+    "fullNamePlaceholder": "Jean Dupont",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "8 caractères min.",
+    "confirm": "Confirmation",
+    "confirmPlaceholder": "Répéter",
+    "age": "Âge",
+    "gender": "Genre",
+    "phone": "Téléphone",
+    "phonePlaceholder": "+33 6 00 00 00 00",
+    "submit": "Créer mon compte",
+    "submitting": "Création du compte...",
+    "errors": {
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "tooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+      "failed": "L'inscription a échoué. Veuillez réessayer."
+    },
+    "terms": "En créant un compte, vous acceptez nos <terms>Conditions d'utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>",
+    "hasAccount": "Vous avez déjà un compte ?",
+    "loginLink": "Se connecter"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Plateforme médicale propulsée par l'IA",
+      "title1": "Votre santé,",
+      "title2": "notre priorité",
+      "text": "Des soins bienveillants assistés par l'IA pour vous et votre famille. Décrivez vos symptômes et obtenez une analyse médicale instantanée.",
+      "cta": "Vérifier mes symptômes",
+      "doctorPortal": "Espace médecin",
+      "badges": {
+        "free": "Gratuit pour toujours",
+        "private": "100 % confidentiel",
+        "noAds": "Sans publicité"
+      }
+    },
+    "quick": {
+      "specialty": "Spécialité",
+      "allSpecialties": "Toutes les spécialités",
+      "symptomType": "Type de symptôme",
+      "selectType": "Choisir un type",
+      "types": {
+        "pain": "Douleur et inconfort",
+        "fever": "Fièvre et frissons",
+        "respiratory": "Respiratoire",
+        "skin": "Peau et éruptions",
+        "digestive": "Digestif"
+      },
+      "urgencyFeeling": "Ressenti d'urgence",
+      "urgency": {
+        "notSure": "Je ne sais pas",
+        "mild": "Léger — peut attendre",
+        "moderate": "Modéré — ça s'aggrave",
+        "emergency": "Urgence — besoin d'aide maintenant"
+      },
+      "analyze": "Analyser maintenant"
+    },
+    "departments": {
+      "cardiology": {
+        "label": "Cardiologie",
+        "desc": "Cœur et circulation"
+      },
+      "neurology": {
+        "label": "Neurologie",
+        "desc": "Système nerveux"
+      },
+      "pulmonology": {
+        "label": "Pneumologie",
+        "desc": "Voies respiratoires"
+      },
+      "dermatology": {
+        "label": "Dermatologie",
+        "desc": "Peau et tissus"
+      },
+      "general": {
+        "label": "Médecine générale",
+        "desc": "Soins primaires"
+      },
+      "infectiology": {
+        "label": "Infectiologie",
+        "desc": "Maladies infectieuses"
+      }
+    },
+    "stats": {
+      "tag": "Chiffres clés",
+      "title": "La confiance des patients du monde entier",
+      "diseases": "Maladies couvertes",
+      "symptoms": "Symptômes suivis",
+      "accuracy": "Précision top 3",
+      "response": "Temps de réponse"
+    },
+    "services": {
+      "tag": "Fonctionnalités",
+      "title": "Services propulsés par l'IA",
+      "text": "Tout ce qu'il faut pour une analyse intelligente des symptômes — rapide, confidentielle, explicable.",
+      "features": {
+        "speed": {
+          "title": "Analyse en 3 secondes",
+          "desc": "Analyse IA instantanée avec les 5 maladies les plus probables, classées par score de confiance."
+        },
+        "xai": {
+          "title": "IA explicable",
+          "desc": "Chaque prédiction montre précisément quels symptômes ont guidé la décision — transparence totale."
+        },
+        "pdf": {
+          "title": "Rapport médical PDF",
+          "desc": "Rapport clinique professionnel généré instantanément, prêt à partager avec votre médecin."
+        },
+        "progress": {
+          "title": "Suivi de l'évolution",
+          "desc": "Comparez vos analyses dans le temps pour repérer les tendances et suivre vos progrès."
+        },
+        "privacy": {
+          "title": "Confidentialité",
+          "desc": "Vos données de santé sont chiffrées de bout en bout, jamais vendues ni partagées avec des tiers."
+        },
+        "review": {
+          "title": "Avis médical",
+          "desc": "Des médecins certifiés peuvent examiner votre analyse IA et ajouter des commentaires professionnels."
+        }
+      },
+      "howTitle": "Comment ça marche",
+      "howText": "Des symptômes au rapport en 4 étapes simples",
+      "steps": {
+        "account": {
+          "title": "Créez votre compte",
+          "desc": "Inscription gratuite en 30 secondes."
+        },
+        "symptoms": {
+          "title": "Décrivez vos symptômes",
+          "desc": "Écrivez avec vos mots ou choisissez parmi 131 symptômes."
+        },
+        "analysis": {
+          "title": "Obtenez l'analyse IA",
+          "desc": "Top 5 des prédictions + spécialiste + urgence."
+        },
+        "report": {
+          "title": "Téléchargez le rapport",
+          "desc": "Rapport professionnel prêt pour votre médecin."
+        }
+      },
+      "cta": "Commencer gratuitement"
+    },
+    "specialties": {
+      "tag": "Spécialités",
+      "title": "Domaines médicaux couverts",
+      "text": "41 maladies réparties sur 6 grandes spécialités médicales, apprises à partir de 303 profils cliniques distincts.",
+      "urgencyTitle": "Classification de l'urgence",
+      "urgencyText": "Chaque analyse est automatiquement classée par niveau d'urgence",
+      "urgency": {
+        "emergency": "Nécessite une prise en charge immédiate",
+        "high": "Consultez un médecin sous 24 heures",
+        "moderate": "Prenez rendez-vous dans la semaine",
+        "low": "Surveillez vos symptômes, hydratez-vous"
+      },
+      "cta": "Vérifier mes symptômes"
+    },
+    "contact": {
+      "tag": "Contact",
+      "title": "Contactez-nous",
+      "text": "Des questions ? En cas d'urgence médicale, appelez toujours immédiatement les services d'urgence.",
+      "cards": {
+        "email": {
+          "title": "Support par e-mail",
+          "value": "support@medai.com",
+          "sub": "Réponse sous 24 heures"
+        },
+        "platform": {
+          "title": "Plateforme",
+          "value": "Assistant Médical IA",
+          "sub": "Plateforme web — aucune application requise"
+        },
+        "privacy": {
+          "title": "Confidentialité",
+          "value": "100 % chiffré",
+          "sub": "Vos données ne sont jamais vendues ni partagées"
+        }
+      },
+      "emergencyTitle": "Numéros d'urgence",
+      "numbers": {
+        "samu": "SAMU (urgence médicale)",
+        "fire": "Pompiers",
+        "police": "Police",
+        "europe": "Urgence européenne"
+      },
+      "emergencyNote": "En cas d'urgence médicale, n'utilisez pas cette plateforme. Appelez immédiatement le 112.",
+      "policiesTitle": "Politiques et avertissement",
+      "policies": {
+        "privacy": {
+          "title": "Confidentialité des données",
+          "desc": "Vos données de santé sont chiffrées de bout en bout, jamais vendues ni partagées avec des tiers."
+        },
+        "notReplacement": {
+          "title": "Ne remplace pas un médecin",
+          "desc": "L'analyse IA est purement informative. Consultez toujours un professionnel de santé diplômé."
+        },
+        "accuracy": {
+          "title": "Précision",
+          "desc": "Les prédictions proviennent d'un modèle entraîné sur 41 maladies et 131 symptômes. Avec 3 symptômes ou plus, la bonne maladie est classée en premier dans environ 94 % des cas de test."
+        },
+        "reports": {
+          "title": "Usage des rapports",
+          "desc": "Les rapports PDF générés sont fournis à titre indicatif et n'ont aucune valeur médico-légale."
+        }
+      },
+      "disclaimerLabel": "Avertissement médical :",
+      "disclaimer": "Cette plateforme est fournie à titre informatif uniquement. En cas d'urgence, appelez le <strong>112</strong>."
+    }
+  },
+  "dashboard": {
+    "portal": "Espace patient",
+    "hello": "Bonjour, {{name}} 👋",
+    "overview": "Voici l'aperçu de votre santé",
+    "quick": {
+      "analyze": {
+        "label": "Nouvelle analyse",
+        "sub": "Vérifiez vos symptômes maintenant"
+      },
+      "history": {
+        "label": "Mon historique",
+        "sub": "Voir mes analyses passées"
+      },
+      "profile": {
+        "label": "Mon profil",
+        "sub": "Gérer mon compte"
+      }
+    },
+    "recent": "Analyses récentes",
+    "emptyText": "Lancez votre première analyse de symptômes par IA",
+    "startFirst": "Lancer ma première analyse"
+  },
+  "history": {
+    "records": "Dossier patient",
+    "title": "Historique des analyses",
+    "total_one": "{{count}} analyse au total",
+    "total_other": "{{count}} analyses au total",
+    "searchPlaceholder": "Rechercher par nom de maladie...",
+    "noResults": "Aucun résultat",
+    "tryOther": "Essayez un autre terme de recherche.",
+    "startNow": "Lancez votre première analyse dès maintenant.",
+    "getStarted": "Commencer",
+    "count_one": "{{count}} analyse",
+    "count_other": "{{count}} analyses",
+    "confirmDelete": "Supprimer définitivement cette analyse ?",
+    "deleteLabel": "Supprimer l'analyse",
+    "openLabel": "Ouvrir l'analyse"
+  },
+  "profile": {
+    "settings": "Paramètres du compte",
+    "title": "Mon profil",
+    "personalInfo": "Informations personnelles",
+    "saved": "Profil mis à jour avec succès !",
+    "saveError": "Impossible d'enregistrer les modifications.",
+    "email": "Adresse e-mail",
+    "emailLocked": "(non modifiable)",
+    "fullName": "Nom complet",
+    "fullNamePlaceholder": "Votre nom complet",
+    "age": "Âge",
+    "gender": "Genre",
+    "phone": "Téléphone",
+    "save": "Enregistrer",
+    "security": "Sécurité du compte",
+    "password": "Mot de passe",
+    "passwordHint": "Pour changer votre mot de passe, déconnectez-vous et utilisez « mot de passe oublié ».",
+    "danger": "Zone de danger",
+    "deleteTitle": "Supprimer mon compte",
+    "deleteText": "Supprime définitivement votre compte et toutes les données associées. Action irréversible.",
+    "deleteButton": "Supprimer le compte",
+    "confirmDelete": "Voulez-vous vraiment supprimer définitivement votre compte ? Cette action est irréversible.",
+    "deleteError": "Impossible de supprimer le compte. Veuillez réessayer."
+  },
+  "trends": {
+    "yourHealth": "Votre santé",
+    "title": "Suivi de l'évolution",
+    "subtitle": "Évolution de la confiance sur vos dernières analyses",
+    "loadError": "Impossible de charger les données d'évolution.",
+    "emptyText": "Lancez votre première analyse de symptômes pour commencer le suivi.",
+    "start": "Lancer une analyse",
+    "analyses": "Analyses",
+    "confidenceDelta": "Δ confiance",
+    "conditions": "Affections détectées",
+    "chartTitle": "Confiance dans le temps",
+    "chartText": "Confiance de l'affection la plus probable pour chaque analyse",
+    "timeline": "Chronologie des analyses",
+    "improved": "Amélioration",
+    "worsened": "Aggravation",
+    "stable": "Stable",
+    "disclaimer": "⚠️ Ces tendances sont basées sur les résultats de l'IA et ne remplacent pas un suivi médical professionnel."
+  },
+  "chat": {
+    "assistant": "Assistant IA",
+    "title": "Chat médical",
+    "subtitle": "Posez toutes vos questions de santé",
+    "welcome": "Bonjour ! Je suis MedAI, votre assistant médical intelligent 🩺\n\nJe peux vous aider à comprendre vos symptômes, interpréter vos résultats d'analyse et répondre à vos questions médicales.\n\nComment puis-je vous aider aujourd'hui ?",
+    "reset": "Conversation réinitialisée. Comment puis-je vous aider ?",
+    "error": "Désolé, une erreur s'est produite. Veuillez réessayer.",
+    "clear": "Effacer la conversation",
+    "contextLoaded": "Contexte chargé :",
+    "urgency": "Urgence :",
+    "prompts": {
+      "meaning": "Que signifie le résultat de mon analyse ?",
+      "urgent": "Quand dois-je consulter un médecin en urgence ?",
+      "explain": "Pouvez-vous m'expliquer l'affection la plus probable ?",
+      "lifestyle": "Quels changements d'hygiène de vie peuvent aider ?",
+      "watch": "Quels sont les symptômes à surveiller ?"
+    },
+    "basicMode": "Mode basique actif. Ajoutez ANTHROPIC_API_KEY dans backend/.env pour l'IA complète.",
+    "placeholder": "Décrivez vos symptômes ou posez une question… (Entrée pour envoyer)",
+    "send": "Envoyer",
+    "footer": "MedAI fournit des informations générales uniquement — consultez toujours un médecin."
+  },
+  "symptomChecker": {
+    "step": "Étape 1 sur 2",
+    "title": "Vérificateur de symptômes",
+    "subtitle": "Décrivez ou sélectionnez tous vos symptômes actuels, puis cliquez sur Analyser",
+    "describeTitle": "Décrivez ce que vous ressentez",
+    "describeHint": "Écrivez avec vos propres mots, en français ou en anglais — par ex. « j'ai mal à la gorge et je tousse depuis 3 jours » ou « I have a headache and feel dizzy, no fever ».",
+    "describePlaceholder": "Décrivez vos symptômes...",
+    "detect": "Détecter les symptômes",
+    "noneRecognised": "Aucun symptôme reconnu — essayez d'autres mots ou choisissez-les dans la liste ci-dessous.",
+    "added": "{{count}} ajouté(s) : {{list}}. Vérifiez la liste et retirez ce qui est incorrect.",
+    "alreadySelected": "Tous les symptômes décrits sont déjà sélectionnés.",
+    "notAdded": "Non ajoutés (vous avez dit ne pas les avoir) : {{list}}",
+    "selected": "Symptômes sélectionnés ({{count}})",
+    "removeSymptom": "Retirer {{name}}",
+    "searchPlaceholder": "Rechercher un symptôme (ex. fièvre, mal de tête, toux...)",
+    "count_one": "{{count}} symptôme",
+    "count_other": "{{count}} symptômes",
+    "matching": "correspondant à « {{query}} »",
+    "noMatch": "Aucun symptôme ne correspond à votre recherche.",
+    "severity": "Quelle est l'intensité globale ?",
+    "mild": "Légère",
+    "unbearable": "Insupportable",
+    "duration": "Depuis combien de temps avez-vous ces symptômes ?",
+    "selectPlaceholder": "Choisir…",
+    "analyzing": "Analyse de vos symptômes...",
+    "analyze_one": "Analyser {{count}} symptôme",
+    "analyze_other": "Analyser {{count}} symptômes",
+    "selectFirst": "Sélectionnez d'abord des symptômes",
+    "errors": {
+      "unavailable": "La liste des symptômes est indisponible — le modèle d'IA n'est pas chargé sur le serveur.",
+      "listFailed": "Impossible de charger la liste des symptômes. Veuillez actualiser la page.",
+      "extractFailed": "Impossible de lire votre description. Veuillez choisir vos symptômes dans la liste.",
+      "minOne": "Veuillez sélectionner au moins 1 symptôme.",
+      "failed": "L'analyse a échoué. Veuillez réessayer."
+    }
+  },
+  "results": {
+    "loadError": "Impossible de charger l'analyse.",
+    "notFound": "Analyse introuvable.",
+    "backToDashboard": "Retour au tableau de bord",
+    "aiAnalysis": "Analyse IA",
+    "title": "Résultat de l'analyse",
+    "askMedAI": "Demander à MedAI",
+    "pdfFailed": "La génération du PDF a échoué.",
+    "reanalyzeFailed": "La nouvelle analyse a échoué. Veuillez réessayer.",
+    "urgencyLevel": "Niveau d'urgence",
+    "specialist": "Spécialiste recommandé",
+    "warningTitle": "Signes d'alerte détectés",
+    "callEmergency": "Appelez votre numéro d'urgence local ou rendez-vous immédiatement aux urgences les plus proches.",
+    "redFlags": {
+      "heart_attack": "Une douleur thoracique avec essoufflement, sueurs ou cœur qui s'emballe peut signaler un infarctus.",
+      "stroke": "Une faiblesse soudaine d'un côté du corps ou des troubles de la parole peuvent être les signes d'un AVC.",
+      "consciousness": "Une confusion ou une baisse de conscience nécessite des soins immédiats.",
+      "meningitis": "Une forte fièvre avec une raideur de la nuque peut indiquer une méningite.",
+      "liver_failure": "Des signes d'insuffisance hépatique aiguë nécessitent des soins immédiats.",
+      "bleeding": "Un saignement (dans les selles, les vomissements ou les crachats) doit être vu rapidement par un médecin.",
+      "lung_infection": "Un essoufflement avec forte fièvre peut indiquer une infection pulmonaire grave.",
+      "jaundice": "Un jaunissement de la peau ou des yeux évoque un problème hépatique et doit être évalué."
+    },
+    "uncertainTitle": "Le résultat est incertain.",
+    "uncertainText": "Ces symptômes correspondent à plusieurs affections. Répondre aux questions ci-dessous rendra l'analyse plus précise.",
+    "yourDescription": "Votre description",
+    "reported": "Symptômes signalés ({{count}})",
+    "severityDuration": "Intensité {{severity}}/10",
+    "topPredictions": "Prédictions principales",
+    "topMatch": "Plus probable",
+    "followUpTitle": "Avez-vous aussi l'un de ces symptômes ?",
+    "followUpText": "Ces symptômes distinguent le mieux les affections possibles. Ajoutez-en un pour affiner l'analyse.",
+    "xaiTitle": "IA explicable — influence des symptômes",
+    "xaiText": "Comment chaque symptôme a rapproché ou éloigné le modèle de la prédiction principale (méthode Leave-One-Out)",
+    "supports": "Soutient la prédiction",
+    "against": "Contre la prédiction",
+    "keyInsight": "<b>À retenir :</b> le symptôme <hl>{{symptom}}</hl> a eu la plus forte influence sur la prédiction <hl>{{disease}}</hl>, avec une contribution {{direction}} de <b>{{value}} %</b>.",
+    "positive": "positive",
+    "negative": "négative",
+    "doctorComments": "Commentaires du médecin",
+    "doctorPrefix": "Dr {{name}}",
+    "corrected": "Corrigé : {{disease}}",
+    "chatTitle": "Des questions sur ce résultat ?",
+    "chatText": "MedAI peut vous expliquer votre résultat et répondre à vos questions.",
+    "openChat": "Ouvrir le chat"
+  },
+  "doctor": {
+    "portal": "Espace médecin",
+    "title": "Dr {{name}}",
+    "subtitle": "Vue d'ensemble des analyses patients",
+    "stats": {
+      "total": "Total des analyses",
+      "high": "Urgence élevée",
+      "emergency": "Urgences"
+    },
+    "listTitle": "Analyses des patients",
+    "searchPlaceholder": "Rechercher par nom de patient ou maladie...",
+    "empty": "Aucune analyse trouvée.",
+    "unknownPatient": "Patient inconnu",
+    "reviewed": "Examinée",
+    "detail": {
+      "label": "Analyse du patient",
+      "patientInfo": "{{age}} ans · {{gender}}",
+      "urgency": "Urgence",
+      "specialist": "Spécialiste",
+      "description": "Description du patient",
+      "symptoms": "Symptômes signalés",
+      "noSymptoms": "Aucun symptôme enregistré.",
+      "predictions": "Prédictions de l'IA",
+      "explanation": "Symptômes ayant guidé la prédiction principale",
+      "previous": "Avis actuel",
+      "validated": "Prédiction validée",
+      "correction": "Correction : {{disease}}",
+      "addComment": "Ajouter ou modifier votre avis",
+      "saved": "Avis enregistré.",
+      "saveError": "Impossible d'enregistrer l'avis. Veuillez réessayer.",
+      "commentPlaceholder": "Rédigez votre commentaire médical...",
+      "commentLabel": "Commentaire médical",
+      "correctedLabel": "Diagnostic corrigé",
+      "noCorrection": "Pas de correction — conserver la prédiction de l'IA",
+      "validate": "Je confirme que la prédiction de l'IA est cliniquement plausible",
+      "submit": "Enregistrer l'avis",
+      "notFound": "Analyse introuvable."
+    }
+  },
+  "admin": {
+    "administration": "Administration",
+    "dashboard": {
+      "title": "Tableau de bord admin",
+      "statsLink": {
+        "title": "Statistiques de la plateforme",
+        "sub": "Graphiques et indicateurs"
+      },
+      "diseasesLink": {
+        "title": "Maladies et symptômes",
+        "sub": "Voir les {{diseases}} maladies et {{symptoms}} symptômes"
+      },
+      "cards": {
+        "users": "Utilisateurs",
+        "analyses": "Analyses",
+        "doctors": "Médecins",
+        "reports": "Rapports"
+      },
+      "retrainTitle": "Réentraînement du modèle",
+      "retrainText": "Relancer l'entraînement du modèle avec les dernières données",
+      "retrainStarted": "Réentraînement lancé en arrière-plan",
+      "retrainFailed": "Impossible de lancer le réentraînement",
+      "retrain": "Réentraîner le modèle",
+      "users": "Gestion des utilisateurs",
+      "searchPlaceholder": "Rechercher par nom ou e-mail...",
+      "roleHint": "Cliquez sur le rôle pour le modifier",
+      "noUsers": "Aucun utilisateur trouvé.",
+      "you": "{{role}} (vous)",
+      "confirmDelete": "Supprimer cet utilisateur ?",
+      "cannotDeleteAdmin": "Impossible de supprimer un admin",
+      "deleteUser": "Supprimer l'utilisateur",
+      "changeRole": "Changer le rôle",
+      "guide": "Guide des accès par rôle",
+      "loginLabel": "Accès :",
+      "roles": {
+        "patient": {
+          "access": [
+            "Vérificateur de symptômes",
+            "Historique des analyses",
+            "Rapports PDF",
+            "Paramètres du profil"
+          ],
+          "login": "Inscription sur /register (rôle par défaut)"
+        },
+        "doctor": {
+          "access": [
+            "Voir les analyses des patients",
+            "Ajouter des commentaires médicaux",
+            "Corriger le diagnostic de l'IA"
+          ],
+          "login": "Attribué via le menu des rôles ci-dessus"
+        },
+        "admin": {
+          "access": [
+            "Gestion des utilisateurs",
+            "Attribution des rôles",
+            "Réentraînement du modèle",
+            "Statistiques"
+          ],
+          "login": "Exécuter : python -m app.utils.create_admin"
+        }
+      }
+    },
+    "stats": {
+      "title": "Statistiques de la plateforme",
+      "subtitle": "Vue en temps réel de l'activité de la plateforme",
+      "cards": {
+        "users": {
+          "label": "Utilisateurs",
+          "sub": "comptes inscrits"
+        },
+        "analyses": {
+          "label": "Analyses",
+          "sub": "analyses IA effectuées"
+        },
+        "doctors": {
+          "label": "Médecins",
+          "sub": "professionnels de santé"
+        },
+        "reports": {
+          "label": "Rapports",
+          "sub": "PDF générés"
+        }
+      },
+      "urgencyTitle": "Répartition par urgence",
+      "urgencyText": "Répartition de toutes les analyses par niveau d'urgence",
+      "totalAnalyses": "Total des analyses",
+      "rolesTitle": "Répartition des rôles",
+      "rolesText": "Répartition des utilisateurs par rôle",
+      "rolesPlural": {
+        "patient": "Patients",
+        "doctor": "Médecins",
+        "admin": "Admins"
+      },
+      "health": "Santé de la plateforme",
+      "healthItems": {
+        "avg": "Analyses moy. / patient",
+        "reportRate": "Taux de génération de rapports",
+        "emergencyRate": "Taux d'urgences",
+        "coverage": "Couverture médicale"
+      },
+      "na": "N/D"
+    },
+    "diseases": {
+      "database": "Base médicale",
+      "title": "Maladies et symptômes",
+      "subtitle": "{{diseases}} maladies · {{symptoms}} symptômes",
+      "tabDiseases": "Maladies ({{count}})",
+      "tabSymptoms": "Symptômes ({{count}})",
+      "searchDiseases": "Rechercher une maladie ou un spécialiste...",
+      "searchSymptoms": "Rechercher un symptôme...",
+      "sortUrgency": "Trier par urgence",
+      "specialist": "Spécialiste recommandé",
+      "urgency": "Niveau d'urgence",
+      "noDiseases": "Aucune maladie trouvée.",
+      "noSymptoms": "Aucun symptôme trouvé.",
+      "loadError": "Impossible de charger la base médicale — le modèle d'IA est-il chargé sur le serveur ?",
+      "footer": "Ce sont les {{symptoms}} symptômes et {{diseases}} maladies sur lesquels le modèle d'IA a été entraîné."
+    }
+  }
+}

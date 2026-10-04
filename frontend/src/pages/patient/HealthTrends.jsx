@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
+import { useMedicalLabels } from "../../i18n/medical";
+import { dateLocale } from "../../i18n";
 import {
   TrendingUp, TrendingDown, Minus, Activity, Loader2,
   AlertCircle, CheckCircle, Zap, AlertTriangle, ChevronRight, Plus
 } from "lucide-react";
 
 const URGENCY_COLOR = {
-  low:       { dot: "#34d399", label: "Low",       bg: "rgba(52,211,153,0.15)" },
-  moderate:  { dot: "#fbbf24", label: "Moderate",  bg: "rgba(251,191,36,0.15)" },
-  high:      { dot: "#f97316", label: "High",      bg: "rgba(249,115,22,0.15)" },
-  emergency: { dot: "#f43f5e", label: "Emergency", bg: "rgba(244,63,94,0.15)" },
+  low:       { dot: "#34d399", bg: "rgba(52,211,153,0.15)" },
+  moderate:  { dot: "#fbbf24", bg: "rgba(251,191,36,0.15)" },
+  high:      { dot: "#f97316", bg: "rgba(249,115,22,0.15)" },
+  emergency: { dot: "#f43f5e", bg: "rgba(244,63,94,0.15)" },
 };
 
 const URGENCY_ICON = {
@@ -47,11 +50,11 @@ function TrendChart({ points }) {
         </defs>
 
         {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map(t => {
-          const y = PAD.top + innerH * (1 - t);
-          const v = Math.round((minC + range * t) * 100);
+        {[0, 0.25, 0.5, 0.75, 1].map(frac => {
+          const y = PAD.top + innerH * (1 - frac);
+          const v = Math.round((minC + range * frac) * 100);
           return (
-            <g key={t}>
+            <g key={frac}>
               <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
                 stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
               <text x={PAD.left - 6} y={y + 4} fill="rgba(255,255,255,0.35)"
@@ -78,7 +81,7 @@ function TrendChart({ points }) {
               {/* Date label */}
               <text x={cx} y={H - 6} fill="rgba(255,255,255,0.35)"
                 fontSize="9" textAnchor="middle">
-                {new Date(p.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                {new Date(p.date).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })}
               </text>
             </g>
           );
@@ -90,25 +93,28 @@ function TrendChart({ points }) {
 
 /* ── Trend pill ─────────────────────────────────────────────────── */
 function TrendPill({ shift }) {
+  const { t } = useTranslation();
   if (shift === null || shift === undefined) return <span className="text-white/30 text-xs">—</span>;
   if (shift > 0) return (
     <span className="inline-flex items-center gap-1 text-green-400 text-xs font-bold">
-      <TrendingUp className="w-3.5 h-3.5" /> Improved
+      <TrendingUp className="w-3.5 h-3.5" /> {t("trends.improved")}
     </span>
   );
   if (shift < 0) return (
     <span className="inline-flex items-center gap-1 text-red-400 text-xs font-bold">
-      <TrendingDown className="w-3.5 h-3.5" /> Worsened
+      <TrendingDown className="w-3.5 h-3.5" /> {t("trends.worsened")}
     </span>
   );
   return (
     <span className="inline-flex items-center gap-1 text-white/50 text-xs font-bold">
-      <Minus className="w-3.5 h-3.5" /> Stable
+      <Minus className="w-3.5 h-3.5" /> {t("trends.stable")}
     </span>
   );
 }
 
 export default function HealthTrends() {
+  const { t } = useTranslation();
+  const labels = useMedicalLabels();
   const [points, setPoints]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState("");
@@ -116,7 +122,7 @@ export default function HealthTrends() {
   useEffect(() => {
     axiosClient.get("/api/analysis/trends?limit=15")
       .then(r => setPoints(r.data))
-      .catch(() => setError("Unable to load trend data."))
+      .catch(() => setError("loadError"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -137,14 +143,14 @@ export default function HealthTrends() {
             <TrendingUp className="w-7 h-7 text-white" />
           </div>
           <div>
-            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">Your Health</p>
-            <h1 className="text-2xl font-black text-white">Evolution Tracking</h1>
-            <p className="text-white/50 text-sm mt-0.5">Confidence trend over your last analyses</p>
+            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">{t("trends.yourHealth")}</p>
+            <h1 className="text-2xl font-black text-white">{t("trends.title")}</h1>
+            <p className="text-white/50 text-sm mt-0.5">{t("trends.subtitle")}</p>
           </div>
         </div>
         <Link to="/patient/analyze"
           className="hidden sm:flex items-center gap-2 bg-teal-500/20 border border-teal-400/30 text-teal-300 font-bold text-sm px-4 py-2.5 rounded-full hover:bg-teal-500/30 transition-all">
-          <Plus className="w-4 h-4" /> New Analysis
+          <Plus className="w-4 h-4" /> {t("common.newAnalysis")}
         </Link>
       </div>
 
@@ -155,15 +161,15 @@ export default function HealthTrends() {
       ) : error ? (
         <div className="bg-red-500/10 border border-red-400/25 rounded-2xl p-8 text-center">
           <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-white/70 font-bold">{error}</p>
+          <p className="text-white/70 font-bold">{t(`trends.${error}`)}</p>
         </div>
       ) : points.length === 0 ? (
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-center py-20 px-6">
           <Activity className="w-14 h-14 text-white/20 mx-auto mb-4" />
-          <p className="font-black text-white/70 text-lg mb-2">No analyses yet</p>
-          <p className="text-white/40 text-sm mb-6">Run your first symptom analysis to start tracking evolution.</p>
+          <p className="font-black text-white/70 text-lg mb-2">{t("common.noAnalyses")}</p>
+          <p className="text-white/40 text-sm mb-6">{t("trends.emptyText")}</p>
           <Link to="/patient/analyze" className="btn-primary inline-flex gap-2">
-            <Plus className="w-4 h-4" /> Start Analysis
+            <Plus className="w-4 h-4" /> {t("trends.start")}
           </Link>
         </div>
       ) : (
@@ -172,17 +178,17 @@ export default function HealthTrends() {
           {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">Analyses</p>
+              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">{t("trends.analyses")}</p>
               <p className="text-white font-black text-3xl">{points.length}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">Confidence Δ</p>
+              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">{t("trends.confidenceDelta")}</p>
               <p className={`font-black text-3xl ${delta >= 0 ? "text-green-400" : "text-red-400"}`}>
                 {delta !== null ? `${delta > 0 ? "+" : ""}${delta}%` : "—"}
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 col-span-2 sm:col-span-1">
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">Conditions Detected</p>
+              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">{t("trends.conditions")}</p>
               <p className="text-white font-black text-3xl">{uniqueDiseases.length}</p>
             </div>
           </div>
@@ -194,9 +200,9 @@ export default function HealthTrends() {
                 <div className="w-7 h-7 bg-teal-500/20 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-3.5 h-3.5 text-teal-400" />
                 </div>
-                Confidence Over Time
+                {t("trends.chartTitle")}
               </h2>
-              <p className="text-xs text-white/35 mb-5 ml-9">Top predicted condition confidence per analysis</p>
+              <p className="text-xs text-white/35 mb-5 ml-9">{t("trends.chartText")}</p>
               <TrendChart points={points} />
 
               {/* Urgency legend */}
@@ -204,7 +210,7 @@ export default function HealthTrends() {
                 {Object.entries(URGENCY_COLOR).map(([k, v]) => (
                   <div key={k} className="flex items-center gap-1.5">
                     <div className="w-3 h-3 rounded-full" style={{ background: v.dot }} />
-                    <span className="text-white/40 text-xs font-semibold">{v.label}</span>
+                    <span className="text-white/40 text-xs font-semibold">{t(`common.urgency.${k}`)}</span>
                   </div>
                 ))}
               </div>
@@ -214,10 +220,10 @@ export default function HealthTrends() {
           {/* Timeline */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/10">
-              <h2 className="font-black text-white">Analysis Timeline</h2>
+              <h2 className="font-black text-white">{t("trends.timeline")}</h2>
             </div>
             <div className="divide-y divide-white/5">
-              {[...points].reverse().map((p, i) => {
+              {[...points].reverse().map(p => {
                 const UIcon = URGENCY_ICON[p.urgency] || CheckCircle;
                 const col   = URGENCY_COLOR[p.urgency] || URGENCY_COLOR.low;
                 return (
@@ -230,9 +236,9 @@ export default function HealthTrends() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-white text-sm truncate">{p.top_disease}</div>
+                      <div className="font-bold text-white text-sm truncate">{labels.disease(p.top_disease)}</div>
                       <div className="text-xs text-white/35 mt-0.5">
-                        {new Date(p.date).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}
+                        {new Date(p.date).toLocaleString(dateLocale(), { dateStyle: "medium", timeStyle: "short" })}
                       </div>
                     </div>
 
@@ -262,7 +268,7 @@ export default function HealthTrends() {
 
           <div className="bg-amber-500/10 border border-amber-400/30 rounded-2xl p-4 text-center">
             <p className="text-amber-200 text-xs font-semibold leading-relaxed">
-              ⚠️ Ces tendances sont basées sur les résultats de l'IA et ne remplacent pas un suivi médical professionnel.
+              {t("trends.disclaimer")}
             </p>
           </div>
         </div>

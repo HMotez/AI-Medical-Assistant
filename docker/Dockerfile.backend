@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
@@ -8,6 +8,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 COPY ml/__init__.py ml/__init__.py
 COPY ml/src/ ml/src/
+
+# Shared EN/FR display names for symptoms, diseases and specialists (PDF reports)
+COPY frontend/src/i18n/medical-labels.json app/i18n/medical-labels.json
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

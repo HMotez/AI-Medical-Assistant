@@ -83,6 +83,54 @@ def test_run_analysis(auth_client):
     assert data["predictions"][0]["disease"] == "Fungal infection"
 
 
+def test_analysis_saves_symptoms_and_details(auth_client):
+    c, token = auth_client
+    details = {
+        "is_uncertain": True,
+        "red_flags": [{"code": "bleeding", "level": "high", "message": "Bleeding", "symptoms": ["bloody_stool"]}],
+        "follow_up_questions": [{"symptom": "nodal_skin_eruptions", "information_gain": 0.4}],
+        "unknown_symptoms": [],
+        "model": "logistic_regression",
+    }
+    with patch("app.services.ml_service.analyze", return_value={**ML_MOCK, "details": details}):
+        created = c.post("/api/analysis/",
+                         json={"symptom_names": ["itching", "skin_rash"], "severity": 7},
+                         headers={"Authorization": f"Bearer {token}"}).json()
+    data = c.get(f"/api/analysis/{created['id']}", headers={"Authorization": f"Bearer {token}"}).json()
+    assert sorted(data["symptoms"]) == ["itching", "skin_rash"]
+    assert data["severity"] == 7
+    assert data["details"]["is_uncertain"] is True
+    assert data["details"]["follow_up_questions"][0]["symptom"] == "nodal_skin_eruptions"
+    assert data["details"]["red_flags"][0]["code"] == "bleeding"   # must survive the response schema
+
+
+def test_analysis_rejects_invalid_severity(auth_client):
+    c, token = auth_client
+    res = c.post("/api/analysis/", json={"symptom_names": ["itching"], "severity": 15},
+                 headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 422
+
+
+def test_extract_symptoms_endpoint(client):
+    extracted = {"symptoms": ["headache"], "negated": ["high_fever"],
+                 "matches": [{"phrase": "mal a la tete", "symptom": "headache", "negated": False}]}
+    with patch("app.services.ml_service.extract_symptoms", return_value=extracted):
+        res = client.post("/api/symptoms/extract", json={"text": "mal à la tête, pas de fièvre"})
+    assert res.status_code == 200
+    assert res.json()["symptoms"] == ["headache"]
+
+
+def test_analysis_from_free_text_only(auth_client):
+    c, token = auth_client
+    with patch("app.services.ml_service.extract_symptoms",
+               return_value={"symptoms": ["itching", "skin_rash"], "negated": [], "matches": []}),          patch("app.services.ml_service.analyze", return_value=ML_MOCK) as analyze:
+        res = c.post("/api/analysis/", json={"free_text": "my skin is itchy with a rash"},
+                     headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 201
+    assert analyze.call_args.args[0] == ["itching", "skin_rash"]
+    assert res.json()["free_text"] == "my skin is itchy with a rash"
+
+
 def test_run_analysis_no_symptoms(auth_client):
     c, token = auth_client
     res = c.post("/api/analysis/", json={"symptom_names": []},
@@ -216,3 +264,23 @@ def test_health_endpoint_public(client):
     res = client.get("/api/health")
     assert res.status_code == 200
     assert res.json()["status"] == "ok"
+
+
+@pytest.mark.parametrize("language, expected", [("en", "Hello! I'm MedAI"), ("fr", "Bonjour ! Je suis MedAI")])
+def test_chat_fallback_follows_language(auth_client, language, expected):
+    c, token = auth_client
+    with patch("app.services.chat_service.settings") as settings:
+        settings.ANTHROPIC_API_KEY = None
+        res = c.post("/api/chat/", json={"message": "hello", "language": language},
+                     headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 200
+    assert res.json()["reply"].startswith(expected)
+
+
+def test_summary_includes_top_disease(auth_client):
+    c, token = auth_client
+    with patch("app.services.ml_service.analyze", return_value=ML_MOCK):
+        c.post("/api/analysis/", json={"symptom_names": ["itching"]},
+               headers={"Authorization": f"Bearer {token}"})
+    res = c.get("/api/analysis/", headers={"Authorization": f"Bearer {token}"})
+    assert res.json()[0]["top_disease"] == "Fungal infection"

@@ -19,6 +19,7 @@ class ChatRequest(BaseModel):
     message: str
     history: list[ChatMessage] = []
     context: Optional[ChatContext] = None
+    language: Optional[str] = None   # interface language: "en" | "fr"
 
 
 class ChatResponse(BaseModel):

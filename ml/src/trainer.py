@@ -1,150 +1,197 @@
 """
-Train XGBoost classifier on the real disease-symptom dataset (132 symptoms, 41 diseases).
+Train the disease classifier on the deduplicated dataset (132 symptoms, 41 diseases).
 Run: python -m ml.src.trainer
+
+Evaluation is honest:
+  - duplicates are removed before splitting, so no test profile is seen in training
+  - test inputs are *partial* symptom lists (1–8 symptoms), like real patients enter
+  - two candidate models are compared with 5-fold CV; the best one is kept
+  - probabilities are calibrated with temperature scaling fitted on out-of-fold data
 """
-import joblib
 import json
+import time
+
+import joblib
 import numpy as np
-import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
+from scipy.optimize import minimize_scalar
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score, log_loss
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from xgboost import XGBClassifier
 
+from ml.src.dataset import augment_partial, load_unique, symptom_given_disease
+
 MODELS_DIR    = Path(__file__).parent.parent / "models" / "saved"
-DATA_PATH     = Path(__file__).parent.parent / "data" / "processed" / "training_data.csv"
 MODEL_PATH    = MODELS_DIR / "model.joblib"
 ENCODER_PATH  = MODELS_DIR / "label_encoder.joblib"
 FEATURES_PATH = MODELS_DIR / "feature_columns.joblib"
+META_PATH     = MODELS_DIR / "model_meta.joblib"
 REPORT_PATH   = MODELS_DIR / "training_report.json"
 
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
-TARGET_COL = "prognosis"
+SEED            = 42
+N_FOLDS         = 5
+TRAIN_AUGMENT   = 30   # partial-symptom samples generated per training profile
+TEST_AUGMENT    = 20   # partial-symptom samples generated per held-out profile
+SYMPTOM_BUCKETS = [(1, 1), (2, 2), (3, 3), (4, 5), (6, 8)]
 
 
-def load_data() -> tuple[pd.DataFrame, list[str]]:
-    df = pd.read_csv(DATA_PATH)
-    # Normalise column names: strip whitespace, collapse internal spaces to underscore
-    df.columns = [c.strip().replace(" ", "_") for c in df.columns]
-    # Drop unnamed / empty columns
-    df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
-    df = df.loc[:, df.columns != ""]
-    # Drop duplicate columns (fluid_overload appears twice in the raw CSV)
-    df = df.loc[:, ~df.columns.duplicated()]
-    # Strip whitespace in the target column
-    df[TARGET_COL] = df[TARGET_COL].str.strip()
-    feature_cols = [c for c in df.columns if c != TARGET_COL]
-    return df, feature_cols
+def make_candidates() -> dict:
+    return {
+        "xgboost": lambda: XGBClassifier(
+            n_estimators=300, max_depth=6, learning_rate=0.1,
+            subsample=0.8, colsample_bytree=0.8, min_child_weight=1,
+            tree_method="hist", eval_metric="mlogloss",
+            random_state=SEED, n_jobs=-1, verbosity=0,
+        ),
+        "logistic_regression": lambda: LogisticRegression(C=3.0, max_iter=2000),
+    }
+
+
+# ── Calibration ─────────────────────────────────────────────────────
+
+def apply_temperature(probas: np.ndarray, temperature: float) -> np.ndarray:
+    """softmax(logits / T), computed from probabilities (log p differs from logits by a constant)."""
+    logits = np.log(np.clip(probas, 1e-12, 1.0)) / temperature
+    logits -= logits.max(axis=1, keepdims=True)
+    exp = np.exp(logits)
+    return exp / exp.sum(axis=1, keepdims=True)
+
+
+def fit_temperature(probas: np.ndarray, y: np.ndarray) -> float:
+    def nll(log_t: float) -> float:
+        p = apply_temperature(probas, np.exp(log_t))
+        return -np.mean(np.log(np.clip(p[np.arange(len(y)), y], 1e-12, 1.0)))
+    res = minimize_scalar(nll, bounds=(np.log(0.05), np.log(20.0)), method="bounded")
+    return float(np.exp(res.x))
+
+
+# ── Metrics ─────────────────────────────────────────────────────────
+
+def top_k_accuracy(probas: np.ndarray, y: np.ndarray, k: int) -> float:
+    top = np.argsort(probas, axis=1)[:, ::-1][:, :k]
+    return float(np.mean([y[i] in top[i] for i in range(len(y))]))
+
+
+def expected_calibration_error(probas: np.ndarray, y: np.ndarray, n_bins: int = 10) -> float:
+    """Gap between stated confidence and actual accuracy of the top prediction."""
+    conf = probas.max(axis=1)
+    correct = probas.argmax(axis=1) == y
+    bins = np.linspace(0, 1, n_bins + 1)
+    ece = 0.0
+    for lo, hi in zip(bins[:-1], bins[1:]):
+        mask = (conf > lo) & (conf <= hi)
+        if mask.any():
+            ece += mask.mean() * abs(conf[mask].mean() - correct[mask].mean())
+    return float(ece)
+
+
+def evaluate(probas: np.ndarray, y: np.ndarray, n_symptoms: np.ndarray, n_classes: int) -> dict:
+    by_count = {}
+    for lo, hi in SYMPTOM_BUCKETS:
+        mask = (n_symptoms >= lo) & (n_symptoms <= hi)
+        label = str(lo) if lo == hi else f"{lo}-{hi}"
+        by_count[label] = {
+            "top1": top_k_accuracy(probas[mask], y[mask], 1),
+            "top3": top_k_accuracy(probas[mask], y[mask], 3),
+            "n":    int(mask.sum()),
+        }
+    return {
+        "top1_accuracy": top_k_accuracy(probas, y, 1),
+        "top3_accuracy": top_k_accuracy(probas, y, 3),
+        "macro_f1":      float(f1_score(y, probas.argmax(axis=1), average="macro")),
+        "log_loss":      float(log_loss(y, probas, labels=np.arange(n_classes))),
+        "ece":           expected_calibration_error(probas, y),
+        "by_symptom_count": by_count,
+    }
+
+
+# ── Training ────────────────────────────────────────────────────────
+
+def cross_validate(name, factory, X, y, n_classes) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Out-of-fold probabilities on partial-symptom test samples."""
+    folds = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
+    oof_p, oof_y, oof_n = [], [], []
+    for fold, (tr, te) in enumerate(folds.split(X, y), 1):
+        rng = np.random.default_rng(SEED + fold)
+        X_tr, y_tr = augment_partial(X[tr], y[tr], TRAIN_AUGMENT, rng)
+        X_te, y_te = augment_partial(X[te], y[te], TEST_AUGMENT, rng)
+        model = factory()
+        model.fit(X_tr, y_tr)
+        oof_p.append(model.predict_proba(X_te))
+        oof_y.append(y_te)
+        oof_n.append(X_te.sum(axis=1))
+        print(f"  [{name}] fold {fold}/{N_FOLDS} done")
+    return np.vstack(oof_p), np.concatenate(oof_y), np.concatenate(oof_n)
 
 
 def train() -> dict:
     print("=" * 60)
-    print("AI Medical Assistant — XGBoost Training")
+    print("AI Medical Assistant — model training")
     print("=" * 60)
 
-    df, feature_cols = load_data()
-    print(f"\nDataset: {len(df)} rows, {len(feature_cols)} features, {df[TARGET_COL].nunique()} diseases")
-    print(f"Diseases: {sorted(df[TARGET_COL].unique())}\n")
-
-    X = df[feature_cols].fillna(0).astype(int).values
-    y_raw = df[TARGET_COL].values
-
+    X, y_raw, feature_cols = load_unique()
     encoder = LabelEncoder()
     y = encoder.fit_transform(y_raw)
+    n_classes = len(encoder.classes_)
+    print(f"\nUnique profiles: {len(X)} | features: {len(feature_cols)} | diseases: {n_classes}\n")
 
-    # 80/20 stratified split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
-    print(f"Train: {len(X_train)} samples | Test: {len(X_test)} samples\n")
+    results = {}
+    for name, factory in make_candidates().items():
+        start = time.time()
+        probas, y_te, n_sym = cross_validate(name, factory, X, y, n_classes)
+        temperature = fit_temperature(probas, y_te)
+        calibrated = apply_temperature(probas, temperature)
+        results[name] = {
+            "temperature": temperature,
+            "raw":         evaluate(probas, y_te, n_sym, n_classes),
+            "calibrated":  evaluate(calibrated, y_te, n_sym, n_classes),
+            "seconds":     round(time.time() - start, 1),
+        }
+        c = results[name]["calibrated"]
+        print(f"  [{name}] top1={c['top1_accuracy']:.3f} top3={c['top3_accuracy']:.3f} "
+              f"logloss={c['log_loss']:.3f} ECE={c['ece']:.3f} T={temperature:.2f}\n")
 
-    # XGBoost with tuned hyperparameters for this dataset
-    model = XGBClassifier(
-        n_estimators=500,
-        max_depth=6,
-        learning_rate=0.05,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        min_child_weight=3,
-        gamma=0.1,
-        reg_alpha=0.1,
-        reg_lambda=1.0,
-        eval_metric="mlogloss",
-        early_stopping_rounds=30,
-        random_state=42,
-        n_jobs=-1,
-        verbosity=0,
-    )
+    best = min(results, key=lambda n: results[n]["calibrated"]["log_loss"])
+    print(f"Selected model: {best}\n")
 
-    print("Training XGBoost...")
-    model.fit(
-        X_train, y_train,
-        eval_set=[(X_test, y_test)],
-        verbose=50,
-    )
+    # Final fit on every profile
+    rng = np.random.default_rng(SEED)
+    X_all, y_all = augment_partial(X, y, TRAIN_AUGMENT, rng)
+    model = make_candidates()[best]()
+    model.fit(X_all, y_all)
 
-    # Test set evaluation
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred, target_names=encoder.classes_, output_dict=True)
-
-    print(f"\n{'=' * 60}")
-    print(f"Test Accuracy : {acc:.4f} ({acc*100:.2f}%)")
-    print(f"Best iteration: {model.best_iteration}")
-    print(f"{'=' * 60}\n")
-    print(classification_report(y_test, y_pred, target_names=encoder.classes_))
-
-    # 5-fold cross-validation on full dataset for robust estimate
-    print("Running 5-fold cross-validation...")
-    cv_scores = cross_val_score(
-        XGBClassifier(
-            n_estimators=model.best_iteration or 300,
-            max_depth=6, learning_rate=0.05,
-            subsample=0.8, colsample_bytree=0.8,
-            eval_metric="mlogloss", random_state=42, n_jobs=-1, verbosity=0,
-        ),
-        X, y, cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=42),
-        scoring="accuracy", n_jobs=-1,
-    )
-    print(f"CV Accuracy: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}\n")
-
-    # Save artefacts FIRST (before any display that could crash)
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
     joblib.dump(model,        MODEL_PATH)
     joblib.dump(encoder,      ENCODER_PATH)
     joblib.dump(feature_cols, FEATURES_PATH)
+    joblib.dump({
+        "model_name":   best,
+        "temperature":  results[best]["temperature"],
+        "symptom_given_disease": symptom_given_disease(X, y, n_classes),
+        "trained_at":   time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }, META_PATH)
 
-    # Top-20 most important features
-    importances = model.feature_importances_
-    top_features = sorted(
-        zip(feature_cols, importances),
-        key=lambda x: x[1], reverse=True
-    )[:20]
-    print("Top 20 most discriminative symptoms:")
-    for sym, imp in top_features:
-        bar = "#" * int(imp * 100)
-        print(f"  {sym:<45} {bar} {imp:.4f}")
-
-    training_report = {
-        "accuracy":          float(acc),
-        "cv_mean":           float(cv_scores.mean()),
-        "cv_std":            float(cv_scores.std()),
-        "best_iteration":    int(model.best_iteration or 0),
-        "n_diseases":        int(len(encoder.classes_)),
-        "n_features":        int(len(feature_cols)),
+    report = {
+        "selected_model":    best,
+        "evaluation":        "5-fold CV on deduplicated profiles, tested on partial symptom lists",
+        "n_unique_profiles": int(len(X)),
+        "n_diseases":        n_classes,
+        "n_features":        len(feature_cols),
         "diseases":          list(encoder.classes_),
-        "top_features":      [{"symptom": s, "importance": float(v)} for s, v in top_features],
-        "classification_report": report,
+        "candidates":        results,
+        **{k: results[best]["calibrated"][k] for k in ("top1_accuracy", "top3_accuracy", "macro_f1", "ece")},
     }
-    REPORT_PATH.write_text(json.dumps(training_report, indent=2, ensure_ascii=False))
+    REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False))
 
-    print(f"\nModel    : {MODEL_PATH}")
-    print(f"Encoder  : {ENCODER_PATH}")
-    print(f"Features : {FEATURES_PATH}")
-    print(f"Report   : {REPORT_PATH}")
-    return training_report
+    print("Accuracy by number of symptoms entered (calibrated, out-of-fold):")
+    for bucket, m in results[best]["calibrated"]["by_symptom_count"].items():
+        print(f"  {bucket:>4} symptoms: top1={m['top1']:.3f}  top3={m['top3']:.3f}  (n={m['n']})")
+    print(f"\nSaved model, encoder, features, meta and report to {MODELS_DIR}")
+    return report
 
 
 if __name__ == "__main__":
-    result = train()
-    print(f"\nDone. Accuracy={result['accuracy']:.4f} | CV={result['cv_mean']:.4f}±{result['cv_std']:.4f}")
+    r = train()
+    print(f"\nDone. top1={r['top1_accuracy']:.3f} | top3={r['top3_accuracy']:.3f} | ECE={r['ece']:.3f}")

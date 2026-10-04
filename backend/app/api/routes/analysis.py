@@ -8,6 +8,7 @@ from app.models.user import User, UserRole
 from app.models.analysis import Analysis, UrgencyLevel
 from app.models.prediction import Prediction
 from app.models.disease import Disease
+from app.models.symptom import Symptom
 from app.schemas.analysis import AnalysisCreate, AnalysisOut, AnalysisSummary, PredictionOut, TrendPoint
 from app.services import ml_service
 
@@ -20,20 +21,26 @@ def run_analysis(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not data.symptom_names:
+    symptom_names = data.symptom_names
+    if not symptom_names and data.free_text:
+        symptom_names = ml_service.extract_symptoms(data.free_text)["symptoms"]
+    if not symptom_names:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one symptom required")
 
-    result = ml_service.analyze(data.symptom_names)
+    result = ml_service.analyze(symptom_names, severity=data.severity)
 
     analysis = Analysis(
         patient_id=current_user.id,
         symptom_duration=data.symptom_duration,
         severity=data.severity,
         additional_info=data.additional_info,
+        free_text=data.free_text,
         urgency_level=UrgencyLevel(result["urgency_level"]),
         recommended_specialist=result["recommended_specialist"],
         explanation=json.dumps(result["shap_explanation"]),
+        ml_details=result.get("details"),
     )
+    analysis.symptoms = _get_or_create_symptoms(db, symptom_names)
     db.add(analysis)
     db.flush()
 
@@ -148,6 +155,17 @@ def delete_analysis(
 
 # --- helpers ---
 
+def _get_or_create_symptoms(db: Session, names: list[str]) -> list[Symptom]:
+    symptoms = []
+    for name in dict.fromkeys(n.strip().lower().replace(" ", "_") for n in names if n.strip()):
+        symptom = db.query(Symptom).filter(Symptom.name == name).first()
+        if not symptom:
+            symptom = Symptom(name=name)
+            db.add(symptom)
+        symptoms.append(symptom)
+    return symptoms
+
+
 def _get_or_404(db: Session, analysis_id: int) -> Analysis:
     a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
     if not a:
@@ -167,6 +185,18 @@ def _format_predictions(db: Session, analysis: Analysis) -> list[dict]:
     ]
 
 
+def _doctor_review(analysis: Analysis) -> dict | None:
+    c = analysis.doctor_comment
+    if not c:
+        return None
+    return {
+        "comment":           c.comment,
+        "corrected_disease": c.corrected_disease,
+        "is_validated":      c.is_validated,
+        "doctor_name":       c.doctor.full_name if c.doctor else None,
+    }
+
+
 def _build_response(analysis: Analysis, predictions: list[dict]) -> dict:
     return {
         "id":                     analysis.id,
@@ -174,5 +204,11 @@ def _build_response(analysis: Analysis, predictions: list[dict]) -> dict:
         "recommended_specialist": analysis.recommended_specialist,
         "explanation":            analysis.explanation,
         "predictions":            predictions,
+        "symptoms":               [s.name for s in analysis.symptoms],
+        "severity":               analysis.severity,
+        "symptom_duration":       analysis.symptom_duration,
+        "free_text":              analysis.free_text,
+        "details":                analysis.ml_details or {},
+        "doctor_review":          _doctor_review(analysis),
         "created_at":             analysis.created_at,
     }

@@ -1,13 +1,20 @@
 #!/bin/sh
 set -e
 
-echo "Creating database tables..."
-python -c "
-import app.models
-from app.core.database import engine, Base
-Base.metadata.create_all(bind=engine)
-print('Tables ready.')
-"
+echo "Applying database migrations..."
+# Databases created earlier with create_all() have tables but no alembic_version:
+# mark them as being at the initial schema so only newer migrations run.
+NEEDS_STAMP=$(python -c "
+from sqlalchemy import inspect
+from app.core.database import engine
+tables = inspect(engine).get_table_names()
+print('yes' if 'analyses' in tables and 'alembic_version' not in tables else 'no')
+")
+if [ "$NEEDS_STAMP" = "yes" ]; then
+    echo "Existing database without migration history — stamping initial schema."
+    alembic stamp 0001
+fi
+alembic upgrade head
 
 echo "Seeding demo accounts..."
 python -m app.utils.create_admin || true

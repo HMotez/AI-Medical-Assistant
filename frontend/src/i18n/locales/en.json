@@ -1,0 +1,687 @@
+{
+  "common": {
+    "language": "Language",
+    "brand": "AI MEDICAL",
+    "brandSub": "Assistant",
+    "appName": "AI Medical Assistant",
+    "loading": "Loading...",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "signOut": "Sign Out",
+    "login": "Login",
+    "back": "Back",
+    "user": "User",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "retry": "Try again",
+    "unknown": "Unknown",
+    "notSet": "Not set",
+    "optional": "(optional)",
+    "roles": {
+      "patient": "Patient",
+      "doctor": "Doctor",
+      "admin": "Admin"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "urgency": {
+      "low": "Low",
+      "moderate": "Moderate",
+      "high": "High",
+      "emergency": "Emergency"
+    },
+    "urgencyLong": {
+      "low": "Low urgency",
+      "moderate": "Moderate",
+      "high": "High urgency",
+      "emergency": "EMERGENCY"
+    },
+    "disclaimer": "This analysis is for <strong>informational purposes only</strong>. Always consult a qualified healthcare professional for medical advice, diagnosis, or treatment.",
+    "newAnalysis": "New Analysis",
+    "analysisNumber": "Analysis #{{id}}",
+    "viewAll": "View all",
+    "noAnalyses": "No analyses yet",
+    "durations": {
+      "lt_1d": "Less than 1 day",
+      "1_3d": "1–3 days",
+      "4_7d": "4–7 days",
+      "1_4w": "1–4 weeks",
+      "gt_1m": "More than a month"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "specialties": "Specialties",
+    "contact": "Contact",
+    "checkSymptoms": "Check Symptoms"
+  },
+  "sidebar": {
+    "mainMenu": "Main Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "patient": {
+      "dashboard": "Dashboard",
+      "symptomChecker": "Symptom Checker",
+      "history": "My History",
+      "trends": "Health Trends",
+      "chat": "MedAI Chat",
+      "profile": "My Profile"
+    },
+    "doctor": {
+      "dashboard": "Dashboard"
+    },
+    "admin": {
+      "dashboard": "Dashboard",
+      "stats": "Statistics",
+      "diseases": "Diseases"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you're looking for doesn't exist or has been moved. Let's get you back on track.",
+    "home": "Back to Home",
+    "dashboard": "My Dashboard"
+  },
+  "login": {
+    "badge": "Secure Medical Platform",
+    "heroTitle1": "Your Health,",
+    "heroTitle2": "Analyzed by AI",
+    "heroText": "Get instant AI-powered symptom analysis, specialist recommendations, and downloadable medical reports.",
+    "stats": {
+      "patients": "Patients",
+      "diseases": "Diseases",
+      "accuracy": "Top-3 accuracy",
+      "private": "Private"
+    },
+    "testimonial": "\"AI Medical helped me identify my condition before my appointment. The report I brought to my doctor was incredibly detailed.\"",
+    "verifiedPatient": "Verified Patient",
+    "footer": "Protected by 256-bit encryption · HIPAA compliant · No data sharing",
+    "title": "Welcome back",
+    "subtitle": "Sign in to access your medical portal",
+    "email": "Email Address",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "submit": "Sign In",
+    "submitting": "Signing in...",
+    "error": "Invalid email or password.",
+    "demoAccounts": "Demo accounts",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Register for free"
+  },
+  "register": {
+    "badge": "Free Forever",
+    "heroTitle1": "Start analyzing",
+    "heroTitle2": "your health today",
+    "heroText": "Join thousands of patients who trust AI Medical for fast, private, and accurate symptom analysis.",
+    "perks": {
+      "analysis": "Instant AI symptom analysis",
+      "reports": "Professional PDF medical reports",
+      "tracking": "Track your health over time",
+      "privacy": "100% private — zero data sharing"
+    },
+    "privacyTitle": "Medical Grade Privacy",
+    "privacyText": "Your health data is encrypted end-to-end, never sold, never shared. You own your data.",
+    "footer": "No credit card · No hidden fees · Cancel anytime",
+    "title": "Create your account",
+    "subtitle": "Free sign-up — takes 30 seconds",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "email": "Email Address",
+    "password": "Password",
+    "passwordPlaceholder": "Min. 8 chars",
+    "confirm": "Confirm",
+    "confirmPlaceholder": "Repeat",
+    "age": "Age",
+    "gender": "Gender",
+    "phone": "Phone",
+    "phonePlaceholder": "+1 555 000 0000",
+    "submit": "Create Account",
+    "submitting": "Creating account...",
+    "errors": {
+      "mismatch": "Passwords do not match.",
+      "tooShort": "Password must be at least 8 characters.",
+      "failed": "Registration failed. Please try again."
+    },
+    "terms": "By creating an account you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in"
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI-Powered Medical Platform",
+      "title1": "Your Health,",
+      "title2": "Our Priority",
+      "text": "Compassionate AI-driven care for you and your family. Describe your symptoms and get an instant medical analysis.",
+      "cta": "Check My Symptoms",
+      "doctorPortal": "Doctor Portal",
+      "badges": {
+        "free": "Free forever",
+        "private": "100% private",
+        "noAds": "No ads"
+      }
+    },
+    "quick": {
+      "specialty": "Specialty",
+      "allSpecialties": "All Specialties",
+      "symptomType": "Symptom Type",
+      "selectType": "Select type",
+      "types": {
+        "pain": "Pain & Discomfort",
+        "fever": "Fever & Chills",
+        "respiratory": "Respiratory",
+        "skin": "Skin & Rash",
+        "digestive": "Digestive"
+      },
+      "urgencyFeeling": "Urgency Feeling",
+      "urgency": {
+        "notSure": "Not sure",
+        "mild": "Mild — can wait",
+        "moderate": "Moderate — getting worse",
+        "emergency": "Emergency — need help now"
+      },
+      "analyze": "Analyze Now"
+    },
+    "departments": {
+      "cardiology": {
+        "label": "Cardiology",
+        "desc": "Heart & circulatory"
+      },
+      "neurology": {
+        "label": "Neurology",
+        "desc": "Nervous system"
+      },
+      "pulmonology": {
+        "label": "Pulmonology",
+        "desc": "Respiratory tract"
+      },
+      "dermatology": {
+        "label": "Dermatology",
+        "desc": "Skin & tissue"
+      },
+      "general": {
+        "label": "General Medicine",
+        "desc": "Primary care"
+      },
+      "infectiology": {
+        "label": "Infectiology",
+        "desc": "Infectious diseases"
+      }
+    },
+    "stats": {
+      "tag": "Platform Stats",
+      "title": "Trusted by Patients Worldwide",
+      "diseases": "Diseases Covered",
+      "symptoms": "Symptoms Tracked",
+      "accuracy": "Top-3 Accuracy",
+      "response": "Response Time"
+    },
+    "services": {
+      "tag": "Features",
+      "title": "AI-Powered Services",
+      "text": "Everything you need for smart symptom analysis — fast, private, explainable.",
+      "features": {
+        "speed": {
+          "title": "3-Second Analysis",
+          "desc": "Instant AI analysis with the top 5 probable diseases ranked by confidence score."
+        },
+        "xai": {
+          "title": "Explainable AI",
+          "desc": "Each prediction shows exactly which symptoms drove the decision — full transparency."
+        },
+        "pdf": {
+          "title": "PDF Medical Report",
+          "desc": "Professional clinical report generated instantly, ready to share with your doctor."
+        },
+        "progress": {
+          "title": "Progress Tracking",
+          "desc": "Compare analyses over time to detect health trends and monitor your improvements."
+        },
+        "privacy": {
+          "title": "Data Privacy",
+          "desc": "Your health data is encrypted end-to-end and never sold or shared with third parties."
+        },
+        "review": {
+          "title": "Doctor Review",
+          "desc": "Certified doctors can review your AI analysis and add professional medical comments."
+        }
+      },
+      "howTitle": "How It Works",
+      "howText": "From symptoms to report in 4 simple steps",
+      "steps": {
+        "account": {
+          "title": "Create your account",
+          "desc": "Free sign-up in 30 seconds."
+        },
+        "symptoms": {
+          "title": "Describe symptoms",
+          "desc": "Write in your own words or choose from 131 symptoms."
+        },
+        "analysis": {
+          "title": "Get AI analysis",
+          "desc": "Top 5 predictions + specialist + urgency."
+        },
+        "report": {
+          "title": "Download PDF report",
+          "desc": "Professional report ready for your doctor."
+        }
+      },
+      "cta": "Get Started Free"
+    },
+    "specialties": {
+      "tag": "Specialties",
+      "title": "Medical Domains Covered",
+      "text": "41 diseases across 6 major medical specialties, learned from 303 distinct clinical profiles.",
+      "urgencyTitle": "Urgency Classification",
+      "urgencyText": "Every analysis is automatically classified by urgency level",
+      "urgency": {
+        "emergency": "Requires immediate medical attention",
+        "high": "See a doctor within 24 hours",
+        "moderate": "Schedule within a week",
+        "low": "Monitor symptoms, stay hydrated"
+      },
+      "cta": "Check My Symptoms"
+    },
+    "contact": {
+      "tag": "Contact",
+      "title": "Get In Touch",
+      "text": "Have questions? For medical emergencies, always call emergency services immediately.",
+      "cards": {
+        "email": {
+          "title": "Email Support",
+          "value": "support@medai.com",
+          "sub": "We respond within 24 hours"
+        },
+        "platform": {
+          "title": "Platform",
+          "value": "AI Medical Assistant",
+          "sub": "Web platform — no app needed"
+        },
+        "privacy": {
+          "title": "Privacy",
+          "value": "100% Encrypted",
+          "sub": "Your data is never sold or shared"
+        }
+      },
+      "emergencyTitle": "Emergency Numbers",
+      "numbers": {
+        "samu": "SAMU (Medical Emergency)",
+        "fire": "Fire Department",
+        "police": "Police",
+        "europe": "Europe Emergency"
+      },
+      "emergencyNote": "In a medical emergency, do not use this platform. Call 112 immediately.",
+      "policiesTitle": "Policies & Disclaimer",
+      "policies": {
+        "privacy": {
+          "title": "Data Privacy",
+          "desc": "Your health data is encrypted end-to-end and never sold or shared with third parties."
+        },
+        "notReplacement": {
+          "title": "Not a Replacement",
+          "desc": "AI analysis is informational only. Always consult a licensed healthcare professional."
+        },
+        "accuracy": {
+          "title": "Accuracy Notice",
+          "desc": "Predictions come from a model trained on 41 diseases and 131 symptoms. With 3 or more symptoms the correct disease is ranked first in about 94% of test cases."
+        },
+        "reports": {
+          "title": "Report Usage",
+          "desc": "Generated PDF reports are for reference only and carry no medical-legal weight."
+        }
+      },
+      "disclaimerLabel": "Medical Disclaimer:",
+      "disclaimer": "This platform is for informational purposes only. In case of emergency, call <strong>112</strong>."
+    }
+  },
+  "dashboard": {
+    "portal": "Patient Portal",
+    "hello": "Hello, {{name}} 👋",
+    "overview": "Here's your health overview",
+    "quick": {
+      "analyze": {
+        "label": "New Analysis",
+        "sub": "Check your symptoms now"
+      },
+      "history": {
+        "label": "My History",
+        "sub": "View past analyses"
+      },
+      "profile": {
+        "label": "My Profile",
+        "sub": "Manage your account"
+      }
+    },
+    "recent": "Recent Analyses",
+    "emptyText": "Start your first AI symptom analysis",
+    "startFirst": "Start First Analysis"
+  },
+  "history": {
+    "records": "Patient Records",
+    "title": "Analysis History",
+    "total_one": "{{count}} analysis in total",
+    "total_other": "{{count}} analyses in total",
+    "searchPlaceholder": "Search by disease name...",
+    "noResults": "No results found",
+    "tryOther": "Try a different search term.",
+    "startNow": "Start your first analysis right now.",
+    "getStarted": "Get Started",
+    "count_one": "{{count}} analysis",
+    "count_other": "{{count}} analyses",
+    "confirmDelete": "Delete this analysis permanently?",
+    "deleteLabel": "Delete analysis",
+    "openLabel": "Open analysis"
+  },
+  "profile": {
+    "settings": "Account Settings",
+    "title": "My Profile",
+    "personalInfo": "Personal Information",
+    "saved": "Profile updated successfully!",
+    "saveError": "Failed to save changes.",
+    "email": "Email Address",
+    "emailLocked": "(cannot be changed)",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Your full name",
+    "age": "Age",
+    "gender": "Gender",
+    "phone": "Phone",
+    "save": "Save Changes",
+    "security": "Account Security",
+    "password": "Password",
+    "passwordHint": "To change your password, log out and use the forgot password flow.",
+    "danger": "Danger Zone",
+    "deleteTitle": "Delete My Account",
+    "deleteText": "Permanently delete your account and all associated data. This cannot be undone.",
+    "deleteButton": "Delete Account",
+    "confirmDelete": "Are you sure you want to permanently delete your account? This cannot be undone.",
+    "deleteError": "Failed to delete account. Please try again."
+  },
+  "trends": {
+    "yourHealth": "Your Health",
+    "title": "Evolution Tracking",
+    "subtitle": "Confidence trend over your last analyses",
+    "loadError": "Unable to load trend data.",
+    "emptyText": "Run your first symptom analysis to start tracking evolution.",
+    "start": "Start Analysis",
+    "analyses": "Analyses",
+    "confidenceDelta": "Confidence Δ",
+    "conditions": "Conditions Detected",
+    "chartTitle": "Confidence Over Time",
+    "chartText": "Top predicted condition confidence per analysis",
+    "timeline": "Analysis Timeline",
+    "improved": "Improved",
+    "worsened": "Worsened",
+    "stable": "Stable",
+    "disclaimer": "⚠️ These trends are based on AI results and do not replace professional medical follow-up."
+  },
+  "chat": {
+    "assistant": "AI Assistant",
+    "title": "Medical Chat",
+    "subtitle": "Ask anything about your health",
+    "welcome": "Hello! I'm MedAI, your intelligent medical assistant 🩺\n\nI can help you understand your symptoms, interpret your analysis results and answer your medical questions.\n\nHow can I help you today?",
+    "reset": "Conversation reset. How can I help you?",
+    "error": "Sorry, something went wrong. Please try again.",
+    "clear": "Clear chat",
+    "contextLoaded": "Context loaded:",
+    "urgency": "Urgency:",
+    "prompts": {
+      "meaning": "What does my analysis result mean?",
+      "urgent": "When should I see a doctor urgently?",
+      "explain": "Can you explain my top predicted condition?",
+      "lifestyle": "What lifestyle changes can help?",
+      "watch": "Which symptoms should I watch for?"
+    },
+    "basicMode": "Basic mode active. Add ANTHROPIC_API_KEY to backend/.env for the full AI.",
+    "placeholder": "Describe your symptoms or ask a question… (Enter to send)",
+    "send": "Send",
+    "footer": "MedAI provides general information only — always consult a doctor."
+  },
+  "symptomChecker": {
+    "step": "Step 1 of 2",
+    "title": "Symptom Checker",
+    "subtitle": "Describe or select all your current symptoms, then click Analyze",
+    "describeTitle": "Describe how you feel",
+    "describeHint": "Write in your own words, in English or French — e.g. \"I have a headache and feel dizzy, no fever\" or \"j'ai mal à la gorge et je tousse depuis 3 jours\".",
+    "describePlaceholder": "Describe your symptoms...",
+    "detect": "Detect symptoms",
+    "noneRecognised": "No symptoms recognised — try other words or pick them from the list below.",
+    "added": "Added {{count}}: {{list}}. Check the list and remove anything wrong.",
+    "alreadySelected": "All symptoms you described are already selected.",
+    "notAdded": "Not added (you said you don't have them): {{list}}",
+    "selected": "Selected symptoms ({{count}})",
+    "removeSymptom": "Remove {{name}}",
+    "searchPlaceholder": "Search symptoms (e.g. fever, headache, cough...)",
+    "count_one": "{{count}} symptom",
+    "count_other": "{{count}} symptoms",
+    "matching": "matching \"{{query}}\"",
+    "noMatch": "No symptoms match your search.",
+    "severity": "How severe is it overall?",
+    "mild": "Mild",
+    "unbearable": "Unbearable",
+    "duration": "How long have you had these symptoms?",
+    "selectPlaceholder": "Select…",
+    "analyzing": "Analyzing your symptoms...",
+    "analyze_one": "Analyze {{count}} Symptom",
+    "analyze_other": "Analyze {{count}} Symptoms",
+    "selectFirst": "Select symptoms first",
+    "errors": {
+      "unavailable": "The symptom list is unavailable — the AI model is not loaded on the server.",
+      "listFailed": "Could not load the symptom list. Please refresh the page.",
+      "extractFailed": "Could not read your description. Please select symptoms from the list.",
+      "minOne": "Please select at least 1 symptom.",
+      "failed": "Analysis failed. Please try again."
+    }
+  },
+  "results": {
+    "loadError": "Failed to load analysis.",
+    "notFound": "Analysis not found.",
+    "backToDashboard": "Back to Dashboard",
+    "aiAnalysis": "AI Analysis",
+    "title": "Analysis Result",
+    "askMedAI": "Ask MedAI",
+    "pdfFailed": "PDF generation failed.",
+    "reanalyzeFailed": "Re-analysis failed. Please try again.",
+    "urgencyLevel": "Urgency Level",
+    "specialist": "Recommended Specialist",
+    "warningTitle": "Warning signs detected",
+    "callEmergency": "Call your local emergency number or go to the nearest emergency department now.",
+    "redFlags": {
+      "heart_attack": "Chest pain with breathlessness, sweating or a racing heart can signal a heart attack.",
+      "stroke": "Sudden weakness on one side or slurred speech can be signs of a stroke.",
+      "consciousness": "Confusion or reduced consciousness needs immediate medical care.",
+      "meningitis": "High fever with a stiff neck can indicate meningitis.",
+      "liver_failure": "Signs of acute liver failure need immediate medical care.",
+      "bleeding": "Bleeding (in stool, vomit or sputum) should be checked by a doctor promptly.",
+      "lung_infection": "Breathlessness with high fever can indicate a serious lung infection.",
+      "jaundice": "Yellowing of the skin or eyes suggests a liver problem and should be assessed."
+    },
+    "uncertainTitle": "The result is uncertain.",
+    "uncertainText": "These symptoms match several conditions. Answering the questions below will make the analysis more precise.",
+    "yourDescription": "Your description",
+    "reported": "Reported Symptoms ({{count}})",
+    "severityDuration": "Severity {{severity}}/10",
+    "topPredictions": "Top Predictions",
+    "topMatch": "Top Match",
+    "followUpTitle": "Do you also have any of these?",
+    "followUpText": "These symptoms best distinguish between the possible conditions. Add one to refine the analysis.",
+    "xaiTitle": "Explainable AI — Symptom Influence",
+    "xaiText": "How each symptom pushed the model toward or away from the top prediction (Leave-One-Out method)",
+    "supports": "Supports prediction",
+    "against": "Against prediction",
+    "keyInsight": "<b>Key insight:</b> the symptom <hl>{{symptom}}</hl> had the strongest influence on predicting <hl>{{disease}}</hl>, with a {{direction}} contribution of <b>{{value}}%</b>.",
+    "positive": "positive",
+    "negative": "negative",
+    "doctorComments": "Doctor Comments",
+    "doctorPrefix": "Dr. {{name}}",
+    "corrected": "Corrected: {{disease}}",
+    "chatTitle": "Questions about this result?",
+    "chatText": "MedAI can explain your result and answer follow-up questions.",
+    "openChat": "Open Chat"
+  },
+  "doctor": {
+    "portal": "Doctor Portal",
+    "title": "Dr. {{name}}",
+    "subtitle": "Patient analyses overview",
+    "stats": {
+      "total": "Total Analyses",
+      "high": "High Urgency",
+      "emergency": "Emergencies"
+    },
+    "listTitle": "Patient Analyses",
+    "searchPlaceholder": "Search by patient name or disease...",
+    "empty": "No analyses found.",
+    "unknownPatient": "Unknown patient",
+    "reviewed": "Reviewed",
+    "detail": {
+      "label": "Patient Analysis",
+      "patientInfo": "{{age}} years · {{gender}}",
+      "urgency": "Urgency",
+      "specialist": "Specialist",
+      "description": "Patient's description",
+      "symptoms": "Reported Symptoms",
+      "noSymptoms": "No symptoms recorded.",
+      "predictions": "AI Predictions",
+      "explanation": "Symptoms that drove the top prediction",
+      "previous": "Current Review",
+      "validated": "Prediction validated",
+      "correction": "Correction: {{disease}}",
+      "addComment": "Add or Update Your Review",
+      "saved": "Review saved.",
+      "saveError": "Could not save the review. Please try again.",
+      "commentPlaceholder": "Write your medical comment...",
+      "commentLabel": "Medical comment",
+      "correctedLabel": "Corrected diagnosis",
+      "noCorrection": "No correction — keep the AI prediction",
+      "validate": "I confirm the AI prediction is clinically plausible",
+      "submit": "Save Review",
+      "notFound": "Analysis not found."
+    }
+  },
+  "admin": {
+    "administration": "Administration",
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "statsLink": {
+        "title": "Platform Statistics",
+        "sub": "Charts & analytics dashboard"
+      },
+      "diseasesLink": {
+        "title": "Diseases & Symptoms",
+        "sub": "View all {{diseases}} diseases & {{symptoms}} symptoms"
+      },
+      "cards": {
+        "users": "Total Users",
+        "analyses": "Total Analyses",
+        "doctors": "Doctors",
+        "reports": "Reports"
+      },
+      "retrainTitle": "ML Model Retraining",
+      "retrainText": "Trigger model retraining with the latest dataset",
+      "retrainStarted": "Retraining started in background",
+      "retrainFailed": "Failed to start retraining",
+      "retrain": "Retrain Model",
+      "users": "User Management",
+      "searchPlaceholder": "Search by name or email...",
+      "roleHint": "Click role badge to change",
+      "noUsers": "No users found.",
+      "you": "{{role}} (you)",
+      "confirmDelete": "Delete this user?",
+      "cannotDeleteAdmin": "Cannot delete admin",
+      "deleteUser": "Delete user",
+      "changeRole": "Change role",
+      "guide": "Role Access Guide",
+      "loginLabel": "Login:",
+      "roles": {
+        "patient": {
+          "access": [
+            "Symptom Checker",
+            "Analysis History",
+            "PDF Reports",
+            "Profile Settings"
+          ],
+          "login": "Register at /register (default role)"
+        },
+        "doctor": {
+          "access": [
+            "View patient analyses",
+            "Add medical comments",
+            "Correct AI diagnosis"
+          ],
+          "login": "Assign via role dropdown above"
+        },
+        "admin": {
+          "access": [
+            "User management",
+            "Role assignment",
+            "ML retraining",
+            "Platform stats"
+          ],
+          "login": "Run: python -m app.utils.create_admin"
+        }
+      }
+    },
+    "stats": {
+      "title": "Platform Statistics",
+      "subtitle": "Real-time overview of all platform activity",
+      "cards": {
+        "users": {
+          "label": "Total Users",
+          "sub": "registered accounts"
+        },
+        "analyses": {
+          "label": "Analyses",
+          "sub": "AI analyses run"
+        },
+        "doctors": {
+          "label": "Doctors",
+          "sub": "medical professionals"
+        },
+        "reports": {
+          "label": "Reports",
+          "sub": "PDF generated"
+        }
+      },
+      "urgencyTitle": "Urgency Distribution",
+      "urgencyText": "Breakdown of all analyses by urgency level",
+      "totalAnalyses": "Total Analyses",
+      "rolesTitle": "User Role Breakdown",
+      "rolesText": "Distribution of users by role",
+      "rolesPlural": {
+        "patient": "Patients",
+        "doctor": "Doctors",
+        "admin": "Admins"
+      },
+      "health": "Platform Health",
+      "healthItems": {
+        "avg": "Avg analyses / patient",
+        "reportRate": "Report generation rate",
+        "emergencyRate": "Emergency rate",
+        "coverage": "Doctor coverage"
+      },
+      "na": "N/A"
+    },
+    "diseases": {
+      "database": "Medical Database",
+      "title": "Diseases & Symptoms",
+      "subtitle": "{{diseases}} diseases · {{symptoms}} symptoms",
+      "tabDiseases": "Diseases ({{count}})",
+      "tabSymptoms": "Symptoms ({{count}})",
+      "searchDiseases": "Search diseases or specialists...",
+      "searchSymptoms": "Search symptoms...",
+      "sortUrgency": "Sort by urgency",
+      "specialist": "Recommended Specialist",
+      "urgency": "Urgency Level",
+      "noDiseases": "No diseases found.",
+      "noSymptoms": "No symptoms found.",
+      "loadError": "Could not load the medical database — is the AI model loaded on the server?",
+      "footer": "These are the {{symptoms}} symptoms and {{diseases}} diseases the AI model was trained on."
+    }
+  }
+}
