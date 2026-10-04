@@ -54,7 +54,9 @@
       "4_7d": "4 à 7 jours",
       "1_4w": "1 à 4 semaines",
       "gt_1m": "Plus d'un mois"
-    }
+    },
+    "themeLight": "Passer au thème clair",
+    "themeDark": "Passer au thème sombre"
   },
   "nav": {
     "home": "Accueil",
@@ -96,14 +98,12 @@
     "heroTitle2": "analysée par l'IA",
     "heroText": "Obtenez une analyse instantanée de vos symptômes, des recommandations de spécialistes et des rapports médicaux téléchargeables.",
     "stats": {
-      "patients": "Patients",
       "diseases": "Maladies",
       "accuracy": "Précision top 3",
-      "private": "Confidentiel"
+      "private": "Confidentiel",
+      "symptoms": "Symptômes"
     },
-    "testimonial": "« AI Medical m'a aidée à identifier mon problème avant mon rendez-vous. Le rapport que j'ai apporté à mon médecin était très détaillé. »",
-    "verifiedPatient": "Patiente vérifiée",
-    "footer": "Chiffrement 256 bits · Conforme HIPAA · Aucun partage de données",
+    "footer": "Mots de passe hachés · Données jamais vendues · Ne remplace pas un médecin",
     "title": "Bon retour",
     "subtitle": "Connectez-vous pour accéder à votre espace médical",
     "email": "Adresse e-mail",
@@ -120,15 +120,15 @@
     "badge": "Gratuit pour toujours",
     "heroTitle1": "Commencez à analyser",
     "heroTitle2": "votre santé dès aujourd'hui",
-    "heroText": "Rejoignez des milliers de patients qui font confiance à AI Medical pour une analyse rapide, confidentielle et précise de leurs symptômes.",
+    "heroText": "Décrivez vos symptômes en français ou en anglais et obtenez en quelques secondes une analyse claire et expliquée.",
     "perks": {
       "analysis": "Analyse instantanée des symptômes par IA",
       "reports": "Rapports médicaux PDF professionnels",
       "tracking": "Suivez l'évolution de votre santé",
-      "privacy": "100 % confidentiel — aucun partage de données"
+      "privacy": "Confidentiel : vos données ne sont jamais vendues"
     },
-    "privacyTitle": "Confidentialité de niveau médical",
-    "privacyText": "Vos données de santé sont chiffrées de bout en bout, jamais vendues, jamais partagées. Vos données vous appartiennent.",
+    "privacyTitle": "Vos données vous appartiennent",
+    "privacyText": "Les mots de passe sont stockés hachés. Vos données de santé servent uniquement à vos analyses et ne sont jamais vendues ni partagées avec des annonceurs. Vous pouvez supprimer votre compte à tout moment.",
     "footer": "Sans carte bancaire · Sans frais cachés · Résiliable à tout moment",
     "title": "Créez votre compte",
     "subtitle": "Inscription gratuite — 30 secondes",
@@ -166,7 +166,8 @@
         "free": "Gratuit pour toujours",
         "private": "100 % confidentiel",
         "noAds": "Sans publicité"
-      }
+      },
+      "stageLabel": "Comment le modèle relie symptômes et maladies"
     },
     "quick": {
       "specialty": "Spécialité",
@@ -217,11 +218,18 @@
     },
     "stats": {
       "tag": "Chiffres clés",
-      "title": "La confiance des patients du monde entier",
+      "title": "Le modèle derrière votre analyse",
       "diseases": "Maladies couvertes",
       "symptoms": "Symptômes suivis",
       "accuracy": "Précision top 3",
-      "response": "Temps de réponse"
+      "response": "Temps de réponse",
+      "languages": "Langues",
+      "captions": {
+        "diseases": "Apprises à partir de 303 profils cliniques distincts",
+        "symptoms": "Décrivez-les avec vos propres mots",
+        "accuracy": "Bonne maladie classée dans le top 3, en validation croisée",
+        "languages": "Français et anglais, à changer à tout moment"
+      }
     },
     "services": {
       "tag": "Fonctionnalités",
@@ -246,7 +254,7 @@
         },
         "privacy": {
           "title": "Confidentialité",
-          "desc": "Vos données de santé sont chiffrées de bout en bout, jamais vendues ni partagées avec des tiers."
+          "desc": "Les mots de passe sont stockés hachés, et vos données de santé ne sont jamais vendues ni partagées avec des annonceurs."
         },
         "review": {
           "title": "Avis médical",
@@ -287,7 +295,9 @@
         "moderate": "Prenez rendez-vous dans la semaine",
         "low": "Surveillez vos symptômes, hydratez-vous"
       },
-      "cta": "Vérifier mes symptômes"
+      "cta": "Vérifier mes symptômes",
+      "unit_one": "maladie",
+      "unit_other": "maladies"
     },
     "contact": {
       "tag": "Contact",
@@ -306,8 +316,8 @@
         },
         "privacy": {
           "title": "Confidentialité",
-          "value": "100 % chiffré",
-          "sub": "Vos données ne sont jamais vendues ni partagées"
+          "value": "Jamais vendues",
+          "sub": "Vos données servent uniquement à vos analyses"
         }
       },
       "emergencyTitle": "Numéros d'urgence",
@@ -322,7 +332,7 @@
       "policies": {
         "privacy": {
           "title": "Confidentialité des données",
-          "desc": "Vos données de santé sont chiffrées de bout en bout, jamais vendues ni partagées avec des tiers."
+          "desc": "Les mots de passe sont stockés hachés. Vos données de santé servent uniquement à vos analyses et ne sont jamais vendues ni partagées avec des annonceurs."
         },
         "notReplacement": {
           "title": "Ne remplace pas un médecin",
@@ -361,7 +371,14 @@
     },
     "recent": "Analyses récentes",
     "emptyText": "Lancez votre première analyse de symptômes par IA",
-    "startFirst": "Lancer ma première analyse"
+    "startFirst": "Lancer ma première analyse",
+    "kpi": {
+      "total": "Analyses",
+      "latest": "Dernier résultat",
+      "urgency": "Dernière urgence",
+      "lastCheck": "Dernier bilan"
+    },
+    "shortcuts": "Raccourcis"
   },
   "history": {
     "records": "Dossier patient",
@@ -477,7 +494,8 @@
       "extractFailed": "Impossible de lire votre description. Veuillez choisir vos symptômes dans la liste.",
       "minOne": "Veuillez sélectionner au moins 1 symptôme.",
       "failed": "L'analyse a échoué. Veuillez réessayer."
-    }
+    },
+    "readByAI": "Lu par l'IA"
   },
   "results": {
     "loadError": "Impossible de charger l'analyse.",
@@ -523,7 +541,13 @@
     "corrected": "Corrigé : {{disease}}",
     "chatTitle": "Des questions sur ce résultat ?",
     "chatText": "MedAI peut vous expliquer votre résultat et répondre à vos questions.",
-    "openChat": "Ouvrir le chat"
+    "openChat": "Ouvrir le chat",
+    "chart": {
+      "rank": "Rang {{rank}}",
+      "supportsTip": "Augmente la probabilité de {{disease}} de {{value}} points",
+      "againstTip": "Diminue la probabilité de {{disease}} de {{value}} points",
+      "unit": "Valeurs en points de pourcentage"
+    }
   },
   "doctor": {
     "portal": "Espace médecin",

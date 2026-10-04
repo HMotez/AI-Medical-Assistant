@@ -1,375 +1,239 @@
 import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import ConstellationStage from "../components/three/ConstellationStage";
+import PageHead from "../components/ui/PageHead";
+import { PHOTOS } from "../constants/photos";
 import {
   Heart, Brain, Wind, Microscope, Stethoscope, Shield,
   Zap, FileText, Search, Activity, Phone, ArrowRight,
-  Star, CheckCircle, TrendingUp, Clock, Users, Award,
-  ChevronDown, Mail, MapPin
+  CheckCircle, TrendingUp, Languages, Users, Award, Mail, MapPin, AlertTriangle, AlertCircle
 } from "lucide-react";
-import { PHOTOS } from "../constants/photos";
+import StatTile from "../components/ui/StatTile";
 
 const DEPARTMENTS = [
-  { Icon: Heart,       key: "cardiology",   color: "from-red-400 to-rose-600" },
-  { Icon: Brain,       key: "neurology",    color: "from-purple-400 to-violet-600" },
-  { Icon: Wind,        key: "pulmonology",  color: "from-blue-400 to-cyan-600" },
-  { Icon: Microscope,  key: "dermatology",  color: "from-pink-400 to-fuchsia-600" },
-  { Icon: Stethoscope, key: "general",      color: "from-teal-400 to-emerald-600" },
-  { Icon: Shield,      key: "infectiology", color: "from-green-400 to-lime-600" },
+  { Icon: Heart,       key: "cardiology" },
+  { Icon: Brain,       key: "neurology" },
+  { Icon: Wind,        key: "pulmonology" },
+  { Icon: Microscope,  key: "dermatology" },
+  { Icon: Stethoscope, key: "general" },
+  { Icon: Shield,      key: "infectiology" },
 ];
 
 const FEATURES = [
-  { Icon: Zap,        key: "speed",    color: "from-amber-400 to-orange-500" },
-  { Icon: Search,     key: "xai",      color: "from-teal-400 to-cyan-500" },
-  { Icon: FileText,   key: "pdf",      color: "from-blue-400 to-indigo-500" },
-  { Icon: TrendingUp, key: "progress", color: "from-purple-400 to-violet-500" },
-  { Icon: Shield,     key: "privacy",  color: "from-green-400 to-emerald-500" },
-  { Icon: Users,      key: "review",   color: "from-rose-400 to-pink-500" },
+  { Icon: Zap,        key: "speed" },
+  { Icon: Search,     key: "xai" },
+  { Icon: FileText,   key: "pdf" },
+  { Icon: TrendingUp, key: "progress" },
+  { Icon: Shield,     key: "privacy" },
+  { Icon: Users,      key: "review" },
 ];
 
 const STATS = [
-  { value: "41",  key: "diseases", Icon: Activity, color: "from-teal-400 to-emerald-500" },
-  { value: "131", key: "symptoms", Icon: Search,   color: "from-blue-400 to-cyan-500" },
-  { value: "95%", key: "accuracy", Icon: Award,    color: "from-purple-400 to-violet-500" },
-  { value: "<3s", key: "response", Icon: Clock,    color: "from-green-400 to-lime-500" },
+  { value: 41,  key: "diseases",  Icon: Activity },
+  { value: 131, key: "symptoms",  Icon: Search },
+  { value: 95,  key: "accuracy",  Icon: Award, unit: "%", meter: 0.95 },
+  { value: 2,   key: "languages", Icon: Languages },
 ];
 
-const STEPS = [
-  { n: "01", key: "account",  grad: "from-teal-400 to-emerald-500" },
-  { n: "02", key: "symptoms", grad: "from-blue-400 to-cyan-500" },
-  { n: "03", key: "analysis", grad: "from-purple-400 to-violet-500" },
-  { n: "04", key: "report",   grad: "from-green-400 to-lime-500" },
-];
+const STEPS = ["account", "symptoms", "analysis", "report"];
 
 // Number of diseases per urgency level (matches URGENCY_RULES in the backend)
 const URGENCY = [
-  { key: "emergency", count: 2,  color: "from-red-400 to-red-600" },
-  { key: "high",      count: 9,  color: "from-orange-400 to-orange-600" },
-  { key: "moderate",  count: 4,  color: "from-amber-400 to-amber-600" },
-  { key: "low",       count: 26, color: "from-green-400 to-green-600" },
+  { key: "emergency", count: 2,  Icon: Zap,           cls: "urgency-emergency" },
+  { key: "high",      count: 9,  Icon: AlertTriangle, cls: "urgency-high" },
+  { key: "moderate",  count: 4,  Icon: AlertCircle,   cls: "urgency-moderate" },
+  { key: "low",       count: 26, Icon: CheckCircle,   cls: "urgency-low" },
 ];
 
-/* Full-screen photo background wrapper — same concept as the hero */
-function PhotoPage({ photo, overlay, children }) {
-  return (
-    <div
-      className="min-h-screen relative overflow-hidden"
-      style={{ backgroundImage: `url(${photo})`, backgroundSize: "cover", backgroundPosition: "center" }}
-    >
-      <div className="absolute inset-0" style={{ background: overlay || "linear-gradient(135deg, rgba(6,14,28,0.85) 0%, rgba(6,26,36,0.80) 100%)" }} />
-      <div className="relative z-10">
-        {children}
-      </div>
-    </div>
-  );
+function CardIcon({ Icon }) {
+  return <div className="card-icon"><Icon className="w-5 h-5" /></div>;
 }
 
-/* Section label */
-function SectionTag({ children, color = "text-teal-400" }) {
+function Section({ eyebrow, title, text, children }) {
   return (
-    <span className={`inline-block text-xs font-black uppercase tracking-widest mb-3 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 ${color}`}>
+    <section className="mt-10">
+      <PageHead eyebrow={eyebrow} title={title} subtitle={text} />
       {children}
-    </span>
+    </section>
   );
 }
 
-/* ── HOME VIEW ── */
-function HomeView({ user }) {
+function Hero({ user }) {
   const { t } = useTranslation();
   return (
-    <div>
-      {/* Hero */}
-      <section
-        className="relative min-h-screen flex flex-col justify-between overflow-hidden"
-        style={{ backgroundImage: `url(${PHOTOS.hero})`, backgroundSize: "cover", backgroundPosition: "center right" }}
-      >
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(to right, rgba(224,246,251,0.97) 0%, rgba(224,246,251,0.92) 35%, rgba(224,246,251,0.6) 55%, rgba(224,246,251,0.1) 75%, transparent 100%)",
-        }} />
+    <ConstellationStage className="min-h-[420px]" photo={PHOTOS.hero}>
+      <span className="pill pill-glass w-fit mb-4">
+        <Activity className="w-3.5 h-3.5" /> {t("landing.hero.badge")}
+      </span>
+      <h1 className="text-[clamp(2.2rem,4.6vw,3.6rem)] font-bold leading-[1.02]">
+        {t("landing.hero.title1")}<br />{t("landing.hero.title2")}
+      </h1>
+      <p className="text-white/85 text-[16.5px] leading-relaxed mt-4 max-w-md">{t("landing.hero.text")}</p>
+      <div className="flex flex-wrap gap-2.5 mt-6">
+        <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary btn-light">
+          {t("landing.hero.cta")} <ArrowRight className="w-4 h-4" />
+        </Link>
+        <Link to="/login" className="btn-ghost !bg-white/15 !text-white backdrop-blur">
+          <Stethoscope className="w-4 h-4" /> {t("landing.hero.doctorPortal")}
+        </Link>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-5">
+        {["free", "private", "noAds"].map(k => (
+          <span key={k} className="pill pill-glass !py-1.5 !text-[13px]"><CheckCircle className="w-3.5 h-3.5" /> {t(`landing.hero.badges.${k}`)}</span>
+        ))}
+      </div>
+    </ConstellationStage>
+  );
+}
 
-        <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center pt-16 pb-8">
-          <div className="max-w-xl">
-            <span className="inline-flex items-center gap-2 bg-teal-500/15 text-teal-700 border border-teal-400/30 text-xs font-black px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest">
-              <Star className="w-3 h-3 fill-teal-500 text-teal-500" /> {t("landing.hero.badge")}
-            </span>
-            <h1 className="font-black leading-[1.08] mb-5 text-gray-900" style={{ fontSize: "clamp(2.6rem, 5vw, 4rem)" }}>
-              {t("landing.hero.title1")}<br />{t("landing.hero.title2")}
-            </h1>
-            <p className="text-gray-600 text-lg mb-8 leading-relaxed max-w-md">
-              {t("landing.hero.text")}
-            </p>
-            <div className="flex flex-wrap gap-3 mb-10">
-              <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary text-base font-black px-8 py-4 gap-2 shadow-teal">
-                {t("landing.hero.cta")} <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link to="/login" className="bg-white/80 hover:bg-white border-2 border-teal-400/40 text-teal-700 font-black text-base px-8 py-4 rounded-full shadow-md hover:shadow-lg transition-all flex items-center gap-2 backdrop-blur-sm">
-                <Stethoscope className="w-5 h-5" /> {t("landing.hero.doctorPortal")}
-              </Link>
-            </div>
-            <div className="flex items-center gap-5 flex-wrap">
-              {["free", "private", "noAds"].map(k => (
-                <span key={k} className="flex items-center gap-1.5 text-sm font-semibold text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-teal-500" /> {t(`landing.hero.badges.${k}`)}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick analysis bar */}
-        <div className="relative px-4 sm:px-8 lg:px-12 pb-10">
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white/85 backdrop-blur-md rounded-3xl shadow-card-hover border border-white p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
-                <div>
-                  <label htmlFor="quick-specialty" className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
-                    <Stethoscope className="w-3 h-3" /> {t("landing.quick.specialty")}
-                  </label>
-                  <div className="relative">
-                    <select id="quick-specialty" className="input-field pr-8 font-semibold appearance-none bg-gray-50">
-                      <option>{t("landing.quick.allSpecialties")}</option>
-                      {DEPARTMENTS.map(d => <option key={d.key}>{t(`landing.departments.${d.key}.label`)}</option>)}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="quick-type" className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
-                    <Activity className="w-3 h-3" /> {t("landing.quick.symptomType")}
-                  </label>
-                  <div className="relative">
-                    <select id="quick-type" className="input-field pr-8 font-semibold appearance-none bg-gray-50">
-                      <option>{t("landing.quick.selectType")}</option>
-                      {["pain", "fever", "respiratory", "skin", "digestive"].map(k =>
-                        <option key={k}>{t(`landing.quick.types.${k}`)}</option>)}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="quick-urgency" className="text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 block flex items-center gap-1">
-                    <Zap className="w-3 h-3" /> {t("landing.quick.urgencyFeeling")}
-                  </label>
-                  <div className="relative">
-                    <select id="quick-urgency" className="input-field pr-8 font-semibold appearance-none bg-gray-50">
-                      {["notSure", "mild", "moderate", "emergency"].map(k =>
-                        <option key={k}>{t(`landing.quick.urgency.${k}`)}</option>)}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary w-full justify-center text-base font-black py-3.5 gap-2 rounded-2xl shadow-teal">
-                  <Activity className="w-5 h-5" /> {t("landing.quick.analyze")}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats on doctor photo */}
-      <PhotoPage photo={PHOTOS.doctorDash} overlay="linear-gradient(135deg, rgba(6,14,28,0.88) 0%, rgba(6,30,50,0.82) 100%)">
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <div className="text-center mb-10">
-            <SectionTag>{t("landing.stats.tag")}</SectionTag>
-            <h2 className="text-3xl font-black text-white">{t("landing.stats.title")}</h2>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {STATS.map(({ value, key, Icon, color }) => (
-              <div key={key} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col items-center gap-3 hover:-translate-y-1 transition-all hover:bg-white/15">
-                <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center shadow-lg`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-4xl font-black text-white">{value}</div>
-                <div className="text-xs font-bold text-white/60 text-center uppercase tracking-wide">{t(`landing.stats.${key}`)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </PhotoPage>
+function Stats() {
+  const { t } = useTranslation();
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mt-4">
+      {STATS.map(({ value, key, Icon, unit, meter }) => (
+        <StatTile key={key} label={t(`landing.stats.${key}`)} value={value} unit={unit} icon={Icon} meter={meter}
+          caption={t(`landing.stats.captions.${key}`)} />
+      ))}
     </div>
   );
 }
 
-/* ── SERVICES VIEW ── */
-function ServicesView({ user }) {
+function HowItWorks({ user }) {
   const { t } = useTranslation();
   return (
-    <PhotoPage photo={PHOTOS.symptomChecker} overlay="linear-gradient(135deg, rgba(6,14,28,0.87) 0%, rgba(6,26,36,0.82) 100%)">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-14">
-          <SectionTag>{t("landing.services.tag")}</SectionTag>
-          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">{t("landing.services.title")}</h1>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">{t("landing.services.text")}</p>
-        </div>
+    <Section eyebrow={t("landing.services.tag")} title={t("landing.services.howTitle")} text={t("landing.services.howText")}>
+      <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {STEPS.map((key, i) => (
+          <li key={key} className="card">
+            <span className="font-data text-[13.5px] text-accent">0{i + 1}</span>
+            <h3 className="text-[17.5px] font-bold mt-2">{t(`landing.services.steps.${key}.title`)}</h3>
+            <p className="text-muted text-[14.5px] mt-1.5">{t(`landing.services.steps.${key}.desc`)}</p>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-5">
+        <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary">
+          {t("landing.services.cta")} <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </Section>
+  );
+}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {FEATURES.map(({ Icon, key, color }) => (
-            <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-7 group hover:-translate-y-2 hover:bg-white/15 hover:border-white/30 transition-all duration-300">
-              <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
-                <Icon className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="font-black text-white mb-2">{t(`landing.services.features.${key}.title`)}</h3>
-              <p className="text-sm text-white/55 leading-relaxed">{t(`landing.services.features.${key}.desc`)}</p>
+function Features() {
+  const { t } = useTranslation();
+  return (
+    <Section eyebrow={t("landing.services.tag")} title={t("landing.services.title")} text={t("landing.services.text")}>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        {FEATURES.map(({ Icon, key }) => (
+          <div key={key} className="card">
+            <div className="card-head !mb-3">
+              <CardIcon Icon={Icon} />
+              <h3>{t(`landing.services.features.${key}.title`)}</h3>
             </div>
-          ))}
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-10 mb-10">
-          <h2 className="text-2xl font-black text-white text-center mb-2">{t("landing.services.howTitle")}</h2>
-          <p className="text-white/50 text-center mb-10">{t("landing.services.howText")}</p>
-          <div className="grid md:grid-cols-4 gap-6 relative">
-            <div className="hidden md:block absolute top-9 left-[12.5%] right-[12.5%] h-0.5"
-              style={{ background: "linear-gradient(to right, #14b8a6, #3b82f6, #8b5cf6, #22c55e)" }} />
-            {STEPS.map(s => (
-              <div key={s.key} className="text-center group">
-                <div className={`w-14 h-14 bg-gradient-to-br ${s.grad} rounded-2xl flex items-center justify-center font-black text-lg mx-auto mb-5 shadow-lg text-white group-hover:scale-110 transition-transform`}>
-                  {s.n}
-                </div>
-                <h3 className="font-black text-white mb-2 text-sm">{t(`landing.services.steps.${s.key}.title`)}</h3>
-                <p className="text-xs text-white/50 leading-relaxed">{t(`landing.services.steps.${s.key}.desc`)}</p>
-              </div>
-            ))}
+            <p className="text-muted text-[15px] leading-relaxed">{t(`landing.services.features.${key}.desc`)}</p>
           </div>
-        </div>
-
-        <div className="text-center">
-          <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary text-base font-black px-10 py-4 gap-2 shadow-teal">
-            {t("landing.services.cta")} <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
+        ))}
       </div>
-    </PhotoPage>
+    </Section>
   );
 }
 
-/* ── SPECIALTIES VIEW ── */
-function DepartmentsView({ user }) {
+function Specialties({ user }) {
   const { t } = useTranslation();
   return (
-    <PhotoPage photo={PHOTOS.results} overlay="linear-gradient(135deg, rgba(6,14,28,0.87) 0%, rgba(10,20,50,0.82) 100%)">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-14">
-          <SectionTag>{t("landing.specialties.tag")}</SectionTag>
-          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">{t("landing.specialties.title")}</h1>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">{t("landing.specialties.text")}</p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-14">
-          {DEPARTMENTS.map(({ Icon, key, color }) => (
-            <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 flex flex-col items-center text-center gap-3 group hover:-translate-y-3 hover:bg-white/18 hover:border-white/30 transition-all duration-300">
-              <div className={`w-16 h-16 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
-                <Icon className="w-8 h-8 text-white" />
-              </div>
-              <div className="font-black text-sm text-white">{t(`landing.departments.${key}.label`)}</div>
-              <div className="text-xs text-white/50 leading-snug">{t(`landing.departments.${key}.desc`)}</div>
+    <>
+      <Section eyebrow={t("landing.specialties.tag")} title={t("landing.specialties.title")} text={t("landing.specialties.text")}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {DEPARTMENTS.map(({ Icon, key }) => (
+            <div key={key} className="card !p-5 text-center">
+              <div className="card-icon mx-auto"><Icon className="w-5 h-5" /></div>
+              <div className="font-display font-bold text-[16px] mt-3">{t(`landing.departments.${key}.label`)}</div>
+              <div className="text-[13.5px] text-muted mt-0.5">{t(`landing.departments.${key}.desc`)}</div>
             </div>
           ))}
         </div>
-
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-black text-white mb-2">{t("landing.specialties.urgencyTitle")}</h2>
-          <p className="text-white/50">{t("landing.specialties.urgencyText")}</p>
-        </div>
-        <div className="grid md:grid-cols-4 gap-5 mb-14">
-          {URGENCY.map(({ key, count, color }) => (
-            <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-6 text-center hover:-translate-y-1 hover:bg-white/15 transition-all">
-              <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                <span className="text-white font-black text-xl">{count}</span>
-              </div>
-              <div className="font-black text-white mb-2">{t(`common.urgency.${key}`)}</div>
-              <p className="text-xs text-white/50 leading-relaxed">{t(`landing.specialties.urgency.${key}`)}</p>
-            </div>
+      </Section>
+      <Section title={t("landing.specialties.urgencyTitle")} text={t("landing.specialties.urgencyText")}>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {URGENCY.map(({ key, count, Icon, cls }) => (
+            <StatTile key={key} label={t(`common.urgency.${key}`)} value={count} unit={t("landing.specialties.unit", { count })}
+              icon={Icon} tone={{ emergency: "bad", high: "serious", moderate: "warn", low: "good" }[key]} caption={t(`landing.specialties.urgency.${key}`)} />
           ))}
         </div>
-
-        <div className="text-center">
-          <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary text-base font-black px-10 py-4 gap-2 shadow-teal">
-            {t("landing.specialties.cta")} <ArrowRight className="w-5 h-5" />
+        <div className="mt-5">
+          <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary">
+            {t("landing.specialties.cta")} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </div>
-    </PhotoPage>
+      </Section>
+    </>
   );
 }
 
-/* ── CONTACT VIEW ── */
 const CONTACT_CARDS = [
-  { Icon: Mail,   key: "email",    color: "from-teal-400 to-cyan-500" },
-  { Icon: MapPin, key: "platform", color: "from-blue-400 to-indigo-500" },
-  { Icon: Shield, key: "privacy",  color: "from-green-400 to-emerald-500" },
+  { Icon: Mail,   key: "email" },
+  { Icon: MapPin, key: "platform" },
+  { Icon: Shield, key: "privacy" },
 ];
 const EMERGENCY_NUMBERS = [["samu", "15"], ["fire", "18"], ["police", "17"], ["europe", "112"]];
 const POLICIES = ["privacy", "notReplacement", "accuracy", "reports"];
 
-function ContactView() {
+function Contact() {
   const { t } = useTranslation();
   return (
-    <PhotoPage photo={PHOTOS.history} overlay="linear-gradient(135deg, rgba(6,14,28,0.88) 0%, rgba(20,10,30,0.83) 100%)">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-14">
-          <SectionTag color="text-amber-400">{t("landing.contact.tag")}</SectionTag>
-          <h1 className="text-4xl md:text-5xl font-black text-white mt-3 mb-4">{t("landing.contact.title")}</h1>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">{t("landing.contact.text")}</p>
+    <Section eyebrow={t("landing.contact.tag")} title={t("landing.contact.title")} text={t("landing.contact.text")}>
+      <div className="grid lg:grid-cols-2 gap-3.5">
+        <div className="grid gap-3.5">
+          {CONTACT_CARDS.map(({ Icon, key }) => (
+            <div key={key} className="card flex items-center gap-4 !py-4">
+              <CardIcon Icon={Icon} />
+              <div className="min-w-0">
+                <div className="text-[12.5px] uppercase tracking-[0.14em] text-dim">{t(`landing.contact.cards.${key}.title`)}</div>
+                <div className="font-display font-bold">{t(`landing.contact.cards.${key}.value`)}</div>
+                <div className="text-[14px] text-muted">{t(`landing.contact.cards.${key}.sub`)}</div>
+              </div>
+            </div>
+          ))}
         </div>
-
-        <div className="grid md:grid-cols-2 gap-8 mb-10">
-          <div className="space-y-4">
-            {CONTACT_CARDS.map(({ Icon, key, color }) => (
-              <div key={key} className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 flex items-center gap-4 hover:bg-white/15 transition-all">
-                <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center shadow-md shrink-0`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="text-xs font-black text-white/40 uppercase tracking-wider">{t(`landing.contact.cards.${key}.title`)}</div>
-                  <div className="font-black text-white">{t(`landing.contact.cards.${key}.value`)}</div>
-                  <div className="text-xs text-white/40 mt-0.5">{t(`landing.contact.cards.${key}.sub`)}</div>
-                </div>
+        <div className="card">
+          <div className="card-head">
+            <div className="card-icon !text-bad !bg-bad/10"><Phone className="w-5 h-5" /></div>
+            <h3>{t("landing.contact.emergencyTitle")}</h3>
+          </div>
+          <div className="grid gap-2">
+            {EMERGENCY_NUMBERS.map(([key, n]) => (
+              <div key={key} className="flex items-center justify-between rounded-2xl bg-panel2 px-4 py-3">
+                <span className="text-[15px] font-medium">{t(`landing.contact.numbers.${key}`)}</span>
+                <span className="font-data text-bad text-[21.5px] font-medium">{n}</span>
               </div>
             ))}
           </div>
-
-          <div className="bg-white/10 backdrop-blur-md border-2 border-red-500/30 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Phone className="w-5 h-5 text-red-400" />
-              <h3 className="font-black text-white text-lg">{t("landing.contact.emergencyTitle")}</h3>
-            </div>
-            <div className="space-y-3">
-              {EMERGENCY_NUMBERS.map(([key, n]) => (
-                <div key={key} className="flex items-center justify-between bg-white/8 border border-white/15 rounded-xl px-4 py-3">
-                  <span className="text-sm font-semibold text-white/80">{t(`landing.contact.numbers.${key}`)}</span>
-                  <span className="text-red-400 font-black text-2xl">{n}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-white/40 mt-4 text-center">{t("landing.contact.emergencyNote")}</p>
-          </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-md border border-amber-400/30 rounded-2xl p-7">
-          <h3 className="font-black text-white text-lg mb-5 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-amber-400" /> {t("landing.contact.policiesTitle")}
-          </h3>
-          <div className="grid md:grid-cols-2 gap-4 mb-5">
-            {POLICIES.map(key => (
-              <div key={key} className="flex gap-3">
-                <CheckCircle className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-black text-sm text-white">{t(`landing.contact.policies.${key}.title`)}</div>
-                  <div className="text-xs text-white/50 mt-0.5 leading-relaxed">{t(`landing.contact.policies.${key}.desc`)}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-red-500/15 border border-red-400/30 rounded-xl p-4 text-center">
-            <p className="text-sm text-white/70 leading-relaxed">
-              <strong className="text-red-400">{t("landing.contact.disclaimerLabel")}</strong>{" "}
-              <Trans i18nKey="landing.contact.disclaimer" components={{ strong: <strong className="text-white" /> }} />
-            </p>
-          </div>
+          <p className="text-[13.5px] text-muted mt-3">{t("landing.contact.emergencyNote")}</p>
         </div>
       </div>
-    </PhotoPage>
+
+      <div className="card mt-3.5">
+        <div className="card-head"><CardIcon Icon={Shield} /><h3>{t("landing.contact.policiesTitle")}</h3></div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {POLICIES.map(key => (
+            <div key={key} className="flex gap-3">
+              <CheckCircle className="w-4 h-4 text-accent shrink-0 mt-1" />
+              <div>
+                <div className="font-semibold text-[15.5px]">{t(`landing.contact.policies.${key}.title`)}</div>
+                <div className="text-[14px] text-muted leading-relaxed">{t(`landing.contact.policies.${key}.desc`)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="alert-error mt-5 !items-start">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span><strong>{t("landing.contact.disclaimerLabel")}</strong>{" "}
+            <Trans i18nKey="landing.contact.disclaimer" components={{ strong: <strong /> }} /></span>
+        </p>
+      </div>
+    </Section>
   );
 }
 
@@ -379,8 +243,15 @@ export default function Landing() {
   const [searchParams] = useSearchParams();
   const view = searchParams.get("view");
 
-  if (view === "services")    return <ServicesView user={user} />;
-  if (view === "departments") return <DepartmentsView user={user} />;
-  if (view === "contact")     return <ContactView />;
-  return <HomeView user={user} />;
+  if (view === "services")    return <><Features /><HowItWorks user={user} /></>;
+  if (view === "departments") return <Specialties user={user} />;
+  if (view === "contact")     return <Contact />;
+  return (
+    <>
+      <Hero user={user} />
+      <Stats />
+      <HowItWorks user={user} />
+      <Features />
+    </>
+  );
 }

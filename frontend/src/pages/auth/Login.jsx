@@ -2,18 +2,19 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
-import LanguageSwitcher from "../../components/LanguageSwitcher";
-import {
-  Stethoscope, Mail, Lock, AlertCircle, Loader2,
-  ArrowRight, Shield, Activity, Users, Award
-} from "lucide-react";
-import { PHOTOS } from "../../constants/photos";
+import AuthLayout from "../../components/layout/AuthLayout";
+import { Mail, Lock, AlertCircle, Loader2, ArrowRight, Shield, Activity, Search, Award } from "lucide-react";
 
 const STATS = [
-  { Icon: Users,    value: "10k+",  key: "patients" },
-  { Icon: Activity, value: "41",    key: "diseases" },
-  { Icon: Award,    value: "95%",   key: "accuracy" },
-  { Icon: Shield,   value: "100%",  key: "private" },
+  { Icon: Search,   value: "131",  key: "symptoms" },
+  { Icon: Activity, value: "41",   key: "diseases" },
+  { Icon: Award,    value: "95%",  key: "accuracy" },
+];
+
+const DEMO = [
+  ["patient", "patient@medai.com", "Patient@1234"],
+  ["doctor",  "doctor@medai.com",  "Doctor@1234"],
+  ["admin",   "admin@medai.com",   "Admin@1234"],
 ];
 
 export default function Login() {
@@ -30,8 +31,7 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
-      const path = user.role === "admin" ? "/admin" : user.role === "doctor" ? "/doctor" : "/patient";
-      navigate(path);
+      navigate(user.role === "admin" ? "/admin" : user.role === "doctor" ? "/doctor" : "/patient");
     } catch (err) {
       setError(err.response?.status === 401 || !err.response?.data?.detail ? t("login.error") : err.response.data.detail);
     } finally {
@@ -39,169 +39,73 @@ export default function Login() {
     }
   };
 
+  const aside = (
+    <>
+      <span className="pill pill-glass w-fit mb-4"><Shield className="w-3.5 h-3.5" /> {t("login.badge")}</span>
+      <h1 className="text-[clamp(2rem,3.4vw,2.8rem)] font-bold leading-[1.04]">
+        {t("login.heroTitle1")}<br />{t("login.heroTitle2")}
+      </h1>
+      <p className="text-white/85 text-[15.5px] mt-3 max-w-sm">{t("login.heroText")}</p>
+      <div className="flex flex-wrap gap-2 mt-5">
+        {STATS.map(({ Icon, value, key }) => (
+          <span key={key} className="pill pill-glass"><Icon className="w-3.5 h-3.5" /> <b className="font-data">{value}</b> {t(`login.stats.${key}`)}</span>
+        ))}
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen flex">
+    <AuthLayout aside={aside} footer={t("login.footer")}>
+      <div className="eyebrow">{t("common.appName")}</div>
+      <h2 className="text-[32px] font-bold mt-1.5">{t("login.title")}</h2>
+      <p className="text-muted text-[15.5px] mt-1">{t("login.subtitle")}</p>
 
-      {/* ── Left: full photo panel ── */}
-      <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden flex-col">
-        <div className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${PHOTOS.login})` }} />
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, rgba(4,30,40,0.93) 0%, rgba(10,40,55,0.88) 50%, rgba(6,60,70,0.82) 100%)" }} />
+      {error && <div className="alert-error mt-5" role="alert"><AlertCircle className="w-4 h-4 shrink-0" /> {error}</div>}
 
-        {/* Top brand */}
-        <div className="relative z-10 p-10">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Stethoscope className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="text-white font-black text-lg tracking-wide leading-none">{t("common.brand")}</div>
-              <div className="text-teal-400 text-xs font-semibold uppercase tracking-widest">{t("common.brandSub")}</div>
-            </div>
+      <form onSubmit={handle} className="grid gap-4 mt-6">
+        <div>
+          <label htmlFor="login-email" className="field-label">{t("login.email")}</label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-dim" />
+            <input id="login-email" type="email" required autoComplete="email" className="input-field !pl-10"
+              placeholder={t("login.emailPlaceholder")}
+              value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
         </div>
-
-        {/* Center content */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center px-10 pb-10">
-          <div className="mb-10">
-            <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest mb-6">
-              <Shield className="w-3 h-3" /> {t("login.badge")}
-            </div>
-            <h1 className="text-5xl font-black text-white leading-tight mb-5">
-              {t("login.heroTitle1")}<br />
-              <span className="text-teal-400">{t("login.heroTitle2")}</span>
-            </h1>
-            <p className="text-white/60 text-lg leading-relaxed max-w-sm">
-              {t("login.heroText")}
-            </p>
-          </div>
-
-          {/* Stats grid */}
-          <div className="grid grid-cols-4 gap-3 mb-10">
-            {STATS.map(({ Icon, value, key }) => (
-              <div key={key} className="bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-4 text-center">
-                <Icon className="w-5 h-5 text-teal-400 mx-auto mb-2" />
-                <div className="text-white font-black text-xl">{value}</div>
-                <div className="text-white/40 text-xs font-semibold mt-0.5">{t(`login.stats.${key}`)}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Testimonial */}
-          <div className="bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-5">
-            <p className="text-white/70 text-sm italic leading-relaxed mb-3">
-              {t("login.testimonial")}
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-black text-sm">
-                S
-              </div>
-              <div>
-                <div className="text-white font-bold text-sm">Sarah M.</div>
-                <div className="text-white/40 text-xs">{t("login.verifiedPatient")}</div>
-              </div>
-              <div className="ml-auto flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-amber-400 text-sm">★</span>
-                ))}
-              </div>
-            </div>
+        <div>
+          <label htmlFor="login-password" className="field-label">{t("login.password")}</label>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-dim" />
+            <input id="login-password" type="password" required autoComplete="current-password" className="input-field !pl-10"
+              placeholder="••••••••"
+              value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
           </div>
         </div>
+        <button type="submit" disabled={loading} className="btn-primary w-full !py-3.5 !text-[16px] mt-1">
+          {loading
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("login.submitting")}</>
+            : <>{t("login.submit")} <ArrowRight className="w-4 h-4" /></>}
+        </button>
+      </form>
 
-        {/* Bottom bar */}
-        <div className="relative z-10 border-t border-white/10 px-10 py-4">
-          <p className="text-white/30 text-xs text-center">
-            {t("login.footer")}
-          </p>
-        </div>
-      </div>
-
-      {/* ── Right: form panel ── */}
-      <div className="w-full lg:w-[48%] bg-white flex items-center justify-center p-8 relative">
-        <LanguageSwitcher className="absolute top-5 right-5" />
-        <div className="w-full max-w-md">
-
-          {/* Mobile brand */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-9 h-9 bg-teal-500 rounded-xl flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-black text-teal-600 text-lg">{t("common.brand")}</span>
-          </div>
-
-          <div className="mb-8">
-            <h2 className="text-3xl font-black text-gray-900 mb-2">{t("login.title")}</h2>
-            <p className="text-gray-400 text-base">{t("login.subtitle")}</p>
-          </div>
-
-          {error && (
-            <div className="flex items-center gap-3 bg-red-50 border-2 border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-xl mb-6">
-              <AlertCircle className="w-5 h-5 shrink-0 text-red-500" /> {error}
-            </div>
-          )}
-
-          <form onSubmit={handle} className="space-y-5">
-
-            <div>
-              <label htmlFor="login-email" className="block text-sm font-bold text-gray-700 mb-2">{t("login.email")}</label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                </div>
-                <input id="login-email" type="email" required autoComplete="email"
-                  className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 text-gray-900 text-base placeholder-gray-300 focus:outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all bg-gray-50 focus:bg-white"
-                  placeholder={t("login.emailPlaceholder")}
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="login-password" className="text-sm font-bold text-gray-700">{t("login.password")}</label>
-              </div>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center">
-                  <Lock className="w-4 h-4 text-gray-400" />
-                </div>
-                <input id="login-password" type="password" required autoComplete="current-password"
-                  className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 text-gray-900 text-base placeholder-gray-300 focus:outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all bg-gray-50 focus:bg-white"
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })} />
-              </div>
-            </div>
-
-            <button type="submit" disabled={loading}
-              className="w-full bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-black text-base py-4 rounded-xl shadow-lg hover:shadow-teal-200 hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 mt-2">
-              {loading
-                ? <><Loader2 className="w-5 h-5 animate-spin" /> {t("login.submitting")}</>
-                : <>{t("login.submit")} <ArrowRight className="w-5 h-5" /></>}
+      {/* Demo accounts: click to fill the form */}
+      <div className="mt-6 rounded-2xl bg-panel2 p-4">
+        <p className="eyebrow !text-muted mb-2">{t("login.demoAccounts")}</p>
+        <div className="grid gap-1.5">
+          {DEMO.map(([role, email, password]) => (
+            <button key={role} type="button" onClick={() => setForm({ email, password })}
+              className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-left hover:bg-panel transition-colors">
+              <span className="chip chip-accent">{t(`common.roles.${role}`)}</span>
+              <span className="font-data text-[12.5px] text-muted truncate">{email}</span>
             </button>
-          </form>
-
-          {/* Demo credentials hint */}
-          <div className="mt-6 bg-teal-50 border border-teal-100 rounded-xl p-4">
-            <p className="text-xs font-black text-teal-700 uppercase tracking-wider mb-2">{t("login.demoAccounts")}</p>
-            <div className="space-y-1 text-xs text-teal-600 font-medium">
-              <div className="flex justify-between"><span>{t("common.roles.patient")} :</span><span className="font-mono">patient@medai.com / Patient@1234</span></div>
-              <div className="flex justify-between"><span>{t("common.roles.doctor")} :</span><span className="font-mono">doctor@medai.com / Doctor@1234</span></div>
-              <div className="flex justify-between"><span>{t("common.roles.admin")} :</span><span className="font-mono">admin@medai.com / Admin@1234</span></div>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-            <p className="text-gray-400 text-sm">
-              {t("login.noAccount")}{" "}
-              <Link to="/register" className="text-teal-600 font-black hover:text-teal-700 transition-colors">
-                {t("login.registerLink")}
-              </Link>
-            </p>
-          </div>
+          ))}
         </div>
       </div>
-    </div>
+
+      <p className="text-center text-[15px] text-muted mt-6">
+        {t("login.noAccount")}{" "}
+        <Link to="/register" className="text-accent font-semibold hover:underline">{t("login.registerLink")}</Link>
+      </p>
+    </AuthLayout>
   );
 }

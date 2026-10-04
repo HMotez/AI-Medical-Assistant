@@ -269,8 +269,7 @@ def test_health_endpoint_public(client):
 @pytest.mark.parametrize("language, expected", [("en", "Hello! I'm MedAI"), ("fr", "Bonjour ! Je suis MedAI")])
 def test_chat_fallback_follows_language(auth_client, language, expected):
     c, token = auth_client
-    with patch("app.services.chat_service.settings") as settings:
-        settings.ANTHROPIC_API_KEY = None
+    with patch("app.core.config.settings.ANTHROPIC_API_KEY", ""):
         res = c.post("/api/chat/", json={"message": "hello", "language": language},
                      headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200

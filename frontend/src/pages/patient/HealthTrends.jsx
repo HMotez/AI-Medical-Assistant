@@ -2,114 +2,80 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
+import PageHead from "../../components/ui/PageHead";
+import UrgencyBadge from "../../components/UrgencyBadge";
+import useChartTip from "../../components/charts/useChartTip";
 import { useMedicalLabels } from "../../i18n/medical";
 import { dateLocale } from "../../i18n";
 import {
-  TrendingUp, TrendingDown, Minus, Activity, Loader2,
-  AlertCircle, CheckCircle, Zap, AlertTriangle, ChevronRight, Plus
+  TrendingUp, TrendingDown, Minus, Activity, Loader2, AlertTriangle, ChevronRight, Plus, Clock,
+  CheckCircle, AlertCircle, Zap, HeartPulse
 } from "lucide-react";
+import StatTile from "../../components/ui/StatTile";
 
+// Urgency colors (status palette) — every use also shows the icon and the word
 const URGENCY_COLOR = {
-  low:       { dot: "#34d399", bg: "rgba(52,211,153,0.15)" },
-  moderate:  { dot: "#fbbf24", bg: "rgba(251,191,36,0.15)" },
-  high:      { dot: "#f97316", bg: "rgba(249,115,22,0.15)" },
-  emergency: { dot: "#f43f5e", bg: "rgba(244,63,94,0.15)" },
+  low:       "rgb(var(--good))",
+  moderate:  "rgb(var(--warn))",
+  high:      "rgb(var(--serious))",
+  emergency: "rgb(var(--bad))",
 };
+const URGENCY_ICON = { low: CheckCircle, moderate: AlertCircle, high: AlertTriangle, emergency: Zap };
 
-const URGENCY_ICON = {
-  low: CheckCircle, moderate: AlertCircle, high: AlertTriangle, emergency: Zap,
-};
-
-/* ── Inline SVG line chart ─────────────────────────────────────── */
+/* ── Confidence over time: one line, fixed 0–100% scale ───────── */
 function TrendChart({ points }) {
-  const W = 600, H = 180, PAD = { top: 20, right: 20, bottom: 40, left: 50 };
+  const { t } = useTranslation();
+  const labels = useMedicalLabels();
+  const { bind, node } = useChartTip();
+  const W = 640, H = 220, PAD = { top: 16, right: 18, bottom: 34, left: 44 };
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
-
   if (points.length < 2) return null;
 
-  const confs = points.map(p => p.confidence);
-  const minC  = Math.min(...confs);
-  const maxC  = Math.max(...confs);
-  const range = maxC - minC || 0.1;
-
-  const toX = (i) => PAD.left + (i / (points.length - 1)) * innerW;
-  const toY = (v) => PAD.top  + innerH - ((v - minC) / range) * innerH;
-
-  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${toX(i)} ${toY(p.confidence)}`).join(" ");
-  const areaD = `${pathD} L ${toX(points.length - 1)} ${PAD.top + innerH} L ${toX(0)} ${PAD.top + innerH} Z`;
+  const x = (i) => PAD.left + (i / (points.length - 1)) * innerW;
+  const y = (v) => PAD.top + innerH - v * innerH;
+  const line = points.map((p, i) => `${i ? "L" : "M"} ${x(i).toFixed(1)} ${y(p.confidence).toFixed(1)}`).join(" ");
+  const area = `${line} L ${x(points.length - 1)} ${PAD.top + innerH} L ${x(0)} ${PAD.top + innerH} Z`;
+  const fmtDate = (d) => new Date(d).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" });
 
   return (
     <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ minWidth: "360px" }}>
-        <defs>
-          <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#14b8a6" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map(frac => {
-          const y = PAD.top + innerH * (1 - frac);
-          const v = Math.round((minC + range * frac) * 100);
-          return (
-            <g key={frac}>
-              <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
-                stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-              <text x={PAD.left - 6} y={y + 4} fill="rgba(255,255,255,0.35)"
-                fontSize="10" textAnchor="end">{v}%</text>
-            </g>
-          );
-        })}
-
-        {/* Area fill */}
-        <path d={areaD} fill="url(#trendFill)" />
-
-        {/* Line */}
-        <path d={pathD} fill="none" stroke="#14b8a6" strokeWidth="2.5"
-          strokeLinecap="round" strokeLinejoin="round" />
-
-        {/* Data points */}
-        {points.map((p, i) => {
-          const cx = toX(i), cy = toY(p.confidence);
-          const col = URGENCY_COLOR[p.urgency]?.dot || "#14b8a6";
-          return (
-            <g key={i}>
-              <circle cx={cx} cy={cy} r="6" fill="#0d2233" stroke={col} strokeWidth="2.5" />
-              <circle cx={cx} cy={cy} r="2.5" fill={col} />
-              {/* Date label */}
-              <text x={cx} y={H - 6} fill="rgba(255,255,255,0.35)"
-                fontSize="9" textAnchor="middle">
-                {new Date(p.date).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })}
-              </text>
-            </g>
-          );
-        })}
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[420px]" role="img" aria-label={t("trends.chartTitle")}>
+        {[0, 0.25, 0.5, 0.75, 1].map(v => (
+          <g key={v}>
+            <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} stroke="var(--chart-grid)" strokeWidth="1" />
+            <text x={PAD.left - 8} y={y(v) + 4} textAnchor="end" fontSize="10" fill="rgb(var(--dim))" fontFamily="var(--f-mono)">
+              {Math.round(v * 100)}%
+            </text>
+          </g>
+        ))}
+        <path d={area} fill="var(--chart-series)" fillOpacity="0.1" />
+        <path d={line} fill="none" stroke="var(--chart-series)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          <g key={p.analysis_id}>
+            <circle cx={x(i)} cy={y(p.confidence)} r="5.5" fill={URGENCY_COLOR[p.urgency] || URGENCY_COLOR.low}
+              stroke="rgb(var(--panel))" strokeWidth="2" />
+            <circle cx={x(i)} cy={y(p.confidence)} r="14" fill="transparent" {...bind(
+              <><b>{labels.disease(p.top_disease)}</b><br />
+                {fmtDate(p.date)} · {Math.round(p.confidence * 100)}% · {t(`common.urgency.${p.urgency || "low"}`)}</>
+            )} />
+            {(i === 0 || i === points.length - 1 || points.length <= 8) && (
+              <text x={x(i)} y={H - 10} textAnchor="middle" fontSize="10" fill="rgb(var(--muted))">{fmtDate(p.date)}</text>
+            )}
+          </g>
+        ))}
       </svg>
+      {node}
     </div>
   );
 }
 
-/* ── Trend pill ─────────────────────────────────────────────────── */
 function TrendPill({ shift }) {
   const { t } = useTranslation();
-  if (shift === null || shift === undefined) return <span className="text-white/30 text-xs">—</span>;
-  if (shift > 0) return (
-    <span className="inline-flex items-center gap-1 text-green-400 text-xs font-bold">
-      <TrendingUp className="w-3.5 h-3.5" /> {t("trends.improved")}
-    </span>
-  );
-  if (shift < 0) return (
-    <span className="inline-flex items-center gap-1 text-red-400 text-xs font-bold">
-      <TrendingDown className="w-3.5 h-3.5" /> {t("trends.worsened")}
-    </span>
-  );
-  return (
-    <span className="inline-flex items-center gap-1 text-white/50 text-xs font-bold">
-      <Minus className="w-3.5 h-3.5" /> {t("trends.stable")}
-    </span>
-  );
+  if (shift === null || shift === undefined) return <span className="text-dim text-[13.5px]">—</span>;
+  if (shift > 0) return <span className="chip chip-good"><TrendingUp className="w-3.5 h-3.5" /> {t("trends.improved")}</span>;
+  if (shift < 0) return <span className="chip !bg-bad/10 !text-bad"><TrendingDown className="w-3.5 h-3.5" /> {t("trends.worsened")}</span>;
+  return <span className="chip"><Minus className="w-3.5 h-3.5" /> {t("trends.stable")}</span>;
 }
 
 export default function HealthTrends() {
@@ -126,152 +92,90 @@ export default function HealthTrends() {
       .finally(() => setLoading(false));
   }, []);
 
-  /* Confidence delta first vs last */
   const delta = points.length >= 2
     ? ((points[points.length - 1].confidence - points[0].confidence) * 100).toFixed(1)
     : null;
-
   const uniqueDiseases = [...new Set(points.map(p => p.top_disease))];
 
   return (
-    <div className="min-h-screen p-6 sm:p-8">
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/25">
-            <TrendingUp className="w-7 h-7 text-white" />
-          </div>
-          <div>
-            <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">{t("trends.yourHealth")}</p>
-            <h1 className="text-2xl font-black text-white">{t("trends.title")}</h1>
-            <p className="text-white/50 text-sm mt-0.5">{t("trends.subtitle")}</p>
-          </div>
-        </div>
-        <Link to="/patient/analyze"
-          className="hidden sm:flex items-center gap-2 bg-teal-500/20 border border-teal-400/30 text-teal-300 font-bold text-sm px-4 py-2.5 rounded-full hover:bg-teal-500/30 transition-all">
-          <Plus className="w-4 h-4" /> {t("common.newAnalysis")}
-        </Link>
-      </div>
+    <div className="grid gap-4">
+      <PageHead
+        eyebrow={t("trends.yourHealth")}
+        title={t("trends.title")}
+        subtitle={t("trends.subtitle")}
+        actions={<Link to="/patient/analyze" className="btn-primary"><Plus className="w-4 h-4" /> {t("common.newAnalysis")}</Link>}
+      />
 
       {loading ? (
-        <div className="flex justify-center py-24">
-          <Loader2 className="w-10 h-10 text-teal-400 animate-spin" />
-        </div>
+        <div className="flex justify-center py-20"><Loader2 className="w-7 h-7 text-accent animate-spin" /></div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-400/25 rounded-2xl p-8 text-center">
-          <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-white/70 font-bold">{t(`trends.${error}`)}</p>
-        </div>
+        <div className="alert-error"><AlertTriangle className="w-4 h-4 shrink-0" /> {t(`trends.${error}`)}</div>
       ) : points.length === 0 ? (
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-center py-20 px-6">
-          <Activity className="w-14 h-14 text-white/20 mx-auto mb-4" />
-          <p className="font-black text-white/70 text-lg mb-2">{t("common.noAnalyses")}</p>
-          <p className="text-white/40 text-sm mb-6">{t("trends.emptyText")}</p>
-          <Link to="/patient/analyze" className="btn-primary inline-flex gap-2">
-            <Plus className="w-4 h-4" /> {t("trends.start")}
-          </Link>
+        <div className="card text-center !py-14">
+          <div className="card-icon mx-auto"><Activity className="w-5 h-5" /></div>
+          <p className="font-display font-bold text-[18.5px] mt-3">{t("common.noAnalyses")}</p>
+          <p className="text-muted text-[14.5px] mt-1 mb-5">{t("trends.emptyText")}</p>
+          <Link to="/patient/analyze" className="btn-primary"><Plus className="w-4 h-4" /> {t("trends.start")}</Link>
         </div>
       ) : (
-        <div className="max-w-4xl space-y-5">
-
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">{t("trends.analyses")}</p>
-              <p className="text-white font-black text-3xl">{points.length}</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">{t("trends.confidenceDelta")}</p>
-              <p className={`font-black text-3xl ${delta >= 0 ? "text-green-400" : "text-red-400"}`}>
-                {delta !== null ? `${delta > 0 ? "+" : ""}${delta}%` : "—"}
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 col-span-2 sm:col-span-1">
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-2">{t("trends.conditions")}</p>
-              <p className="text-white font-black text-3xl">{uniqueDiseases.length}</p>
-            </div>
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <StatTile label={t("trends.analyses")} value={points.length} icon={Activity} />
+            <StatTile label={t("trends.confidenceDelta")} icon={delta >= 0 ? TrendingUp : TrendingDown}
+              value={delta !== null ? `${delta > 0 ? "+" : ""}${delta}` : null} unit={delta !== null ? "%" : undefined} />
+            <StatTile className="col-span-2 lg:col-span-1" label={t("trends.conditions")} value={uniqueDiseases.length} icon={HeartPulse} />
           </div>
 
-          {/* Chart */}
           {points.length >= 2 && (
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-              <h2 className="font-black text-white mb-1 flex items-center gap-2">
-                <div className="w-7 h-7 bg-teal-500/20 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-3.5 h-3.5 text-teal-400" />
-                </div>
-                {t("trends.chartTitle")}
-              </h2>
-              <p className="text-xs text-white/35 mb-5 ml-9">{t("trends.chartText")}</p>
-              <TrendChart points={points} />
-
-              {/* Urgency legend */}
-              <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-white/10">
-                {Object.entries(URGENCY_COLOR).map(([k, v]) => (
-                  <div key={k} className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full" style={{ background: v.dot }} />
-                    <span className="text-white/40 text-xs font-semibold">{t(`common.urgency.${k}`)}</span>
-                  </div>
-                ))}
+            <section className="card">
+              <div className="card-head">
+                <div className="card-icon"><TrendingUp className="w-5 h-5" /></div>
+                <div><h2>{t("trends.chartTitle")}</h2><small>{t("trends.chartText")}</small></div>
               </div>
-            </div>
+              <TrendChart points={points} />
+              <div className="flex flex-wrap gap-2 mt-3">
+                {Object.keys(URGENCY_COLOR).map(k => {
+                  const Icon = URGENCY_ICON[k];
+                  return (
+                    <span key={k} className="chip !bg-transparent">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: URGENCY_COLOR[k] }} />
+                      <Icon className="w-3 h-3" /> {t(`common.urgency.${k}`)}
+                    </span>
+                  );
+                })}
+              </div>
+            </section>
           )}
 
-          {/* Timeline */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10">
-              <h2 className="font-black text-white">{t("trends.timeline")}</h2>
+          <section className="card">
+            <div className="card-head">
+              <div className="card-icon"><Clock className="w-5 h-5" /></div>
+              <h2>{t("trends.timeline")}</h2>
             </div>
-            <div className="divide-y divide-white/5">
-              {[...points].reverse().map(p => {
-                const UIcon = URGENCY_ICON[p.urgency] || CheckCircle;
-                const col   = URGENCY_COLOR[p.urgency] || URGENCY_COLOR.low;
-                return (
-                  <div key={p.analysis_id}
-                    className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors group">
-                    {/* Urgency dot */}
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: col.bg, border: `1px solid ${col.dot}40` }}>
-                      <UIcon className="w-5 h-5" style={{ color: col.dot }} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-white text-sm truncate">{labels.disease(p.top_disease)}</div>
-                      <div className="text-xs text-white/35 mt-0.5">
-                        {new Date(p.date).toLocaleString(dateLocale(), { dateStyle: "medium", timeStyle: "short" })}
-                      </div>
-                    </div>
-
-                    {/* Confidence bar */}
-                    <div className="hidden sm:flex flex-col items-end gap-1 shrink-0 w-24">
-                      <span className="text-white/70 font-black text-sm">
-                        {Math.round(p.confidence * 100)}%
-                      </span>
-                      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-teal-400 transition-all"
-                          style={{ width: `${Math.round(p.confidence * 100)}%` }} />
-                      </div>
-                    </div>
-
-                    <TrendPill shift={p.rank_shift} />
-
-                    <Link to={`/patient/results/${p.analysis_id}`}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30
-                        hover:text-teal-300 hover:bg-teal-500/20 transition-all opacity-0 group-hover:opacity-100 shrink-0">
-                      <ChevronRight className="w-4 h-4" />
-                    </Link>
+            <div className="grid gap-2">
+              {[...points].reverse().map(p => (
+                <Link key={p.analysis_id} to={`/patient/results/${p.analysis_id}`}
+                  className="group flex flex-wrap items-center gap-3.5 rounded-[20px] border border-line bg-panel px-3 py-2.5 transition-all hover:bg-raise hover:translate-x-1">
+                  <div className="flex-1 min-w-[160px]">
+                    <div className="text-[15.5px] font-semibold truncate">{labels.disease(p.top_disease)}</div>
+                    <div className="text-[13.5px] text-muted">{new Date(p.date).toLocaleString(dateLocale(), { dateStyle: "medium", timeStyle: "short" })}</div>
                   </div>
-                );
-              })}
+                  <div className="hidden sm:flex items-center gap-2 w-28">
+                    <div className="flex-1 h-1.5 rounded-full bg-panel2 overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${Math.round(p.confidence * 100)}%`, background: "var(--chart-series)" }} />
+                    </div>
+                    <span className="font-data text-[12.5px] text-muted w-9 text-right">{Math.round(p.confidence * 100)}%</span>
+                  </div>
+                  <UrgencyBadge level={p.urgency} />
+                  <TrendPill shift={p.rank_shift} />
+                  <ChevronRight className="w-4 h-4 text-dim group-hover:text-accent" />
+                </Link>
+              ))}
             </div>
-          </div>
+          </section>
 
-          <div className="bg-amber-500/10 border border-amber-400/30 rounded-2xl p-4 text-center">
-            <p className="text-amber-200 text-xs font-semibold leading-relaxed">
-              {t("trends.disclaimer")}
-            </p>
-          </div>
-        </div>
+          <p className="text-center text-[13.5px] text-muted">{t("trends.disclaimer")}</p>
+        </>
       )}
     </div>
   );

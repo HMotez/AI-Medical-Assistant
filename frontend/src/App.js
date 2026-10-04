@@ -1,9 +1,11 @@
+import { useRef } from "react";
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar  from "./components/layout/Navbar";
-import Sidebar from "./components/layout/Sidebar";
-import { PHOTOS } from "./constants/photos";
+import Navbar   from "./components/layout/Navbar";
+import AppFrame from "./components/layout/AppFrame";
+import PhotoBackdrop from "./components/layout/PhotoBackdrop";
+import useRiseIn from "./components/ui/useRiseIn";
 
 /* Public */
 import Landing   from "./pages/Landing";
@@ -39,64 +41,20 @@ function AdminRoute({ children }) {
   return <ProtectedRoute roles={["admin"]}>{children}</ProtectedRoute>;
 }
 
-/* Route → photo mapping */
-const ROUTE_PHOTOS = [
-  { match: "/patient/analyze",    photo: PHOTOS.symptomChecker },
-  { match: "/patient/results",    photo: PHOTOS.results },
-  { match: "/patient/history",    photo: PHOTOS.history },
-  { match: "/patient/profile",    photo: PHOTOS.patientDash },
-  { match: "/patient/chat",       photo: PHOTOS.doctorDash },
-  { match: "/patient/trends",     photo: PHOTOS.history },
-  { match: "/patient",            photo: PHOTOS.patientDash },
-  { match: "/doctor/analysis",    photo: PHOTOS.results },
-  { match: "/doctor",             photo: PHOTOS.doctorDash },
-  { match: "/admin/stats",        photo: PHOTOS.adminDash },
-  { match: "/admin/diseases",     photo: PHOTOS.results },
-  { match: "/admin",              photo: PHOTOS.adminDash },
-];
-
-function getPhoto(pathname) {
-  for (const { match, photo } of ROUTE_PHOTOS) {
-    if (pathname === match || pathname.startsWith(match + "/")) return photo;
-  }
-  return PHOTOS.patientDash;
-}
-
-/* Landing — top navbar only */
+/* Landing — top bar inside the frame */
 function PublicLayout() {
+  const { pathname, search } = useLocation();
+  const pageRef = useRef(null);
+  useRiseIn(pageRef, pathname + search);
   return (
-    <>
-      <Navbar />
-      <Outlet />
-    </>
-  );
-}
-
-/* Authenticated — sidebar + full photo background per page */
-function SidebarLayout() {
-  const { pathname } = useLocation();
-  const photo = getPhoto(pathname);
-
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <main
-        className="flex-1 overflow-y-auto relative"
-        style={{
-          backgroundImage: `url(${photo})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Dark overlay so content stays readable */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(135deg, rgba(6,14,28,0.9) 0%, rgba(6,26,36,0.88) 100%)" }}
-        />
-        <div className="relative z-10">
+    <div className="relative min-h-screen p-0 sm:p-4 lg:p-7">
+      <PhotoBackdrop />
+      <div className="app-frame min-h-[calc(100vh-3.5rem)] p-3 sm:p-4 lg:p-5 max-sm:rounded-none">
+        <Navbar />
+        <div key={pathname + search} ref={pageRef} className="page-enter pt-3">
           <Outlet />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -107,17 +65,17 @@ export default function App() {
       <AuthProvider>
         <Routes>
 
-          {/* ── Landing (top navbar) ──────────────────────────────── */}
+          {/* ── Landing ──────────────────────────────────────────── */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Landing />} />
           </Route>
 
-          {/* ── Auth pages (standalone) ───────────────────────────── */}
+          {/* ── Auth pages (standalone) ──────────────────────────── */}
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* ── Patient (sidebar + photo bg) ─────────────────────── */}
-          <Route element={<SidebarLayout />}>
+          {/* ── Signed-in app: one frame with sidebar ────────────── */}
+          <Route element={<AppFrame />}>
             <Route path="/patient"             element={<PatientRoute><PatientDashboard /></PatientRoute>} />
             <Route path="/patient/analyze"     element={<PatientRoute><SymptomChecker /></PatientRoute>} />
             <Route path="/patient/results/:id" element={<PatientRoute><Results /></PatientRoute>} />
@@ -125,16 +83,10 @@ export default function App() {
             <Route path="/patient/profile"     element={<PatientRoute><Profile /></PatientRoute>} />
             <Route path="/patient/chat"        element={<PatientRoute><MedicalChat /></PatientRoute>} />
             <Route path="/patient/trends"      element={<PatientRoute><HealthTrends /></PatientRoute>} />
-          </Route>
 
-          {/* ── Doctor (sidebar + photo bg) ──────────────────────── */}
-          <Route element={<SidebarLayout />}>
             <Route path="/doctor"              element={<DoctorRoute><DoctorDashboard /></DoctorRoute>} />
             <Route path="/doctor/analysis/:id" element={<DoctorRoute><AnalysisDetail /></DoctorRoute>} />
-          </Route>
 
-          {/* ── Admin (sidebar + photo bg) ───────────────────────── */}
-          <Route element={<SidebarLayout />}>
             <Route path="/admin"          element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/stats"    element={<AdminRoute><AdminStats /></AdminRoute>} />
             <Route path="/admin/diseases" element={<AdminRoute><AdminDiseases /></AdminRoute>} />

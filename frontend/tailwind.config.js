@@ -1,52 +1,47 @@
 /** @type {import('tailwindcss').Config} */
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      // Design tokens live in src/index.css (:root); these map them to utilities
       colors: {
-        teal: {
-          50:  "#f0fdfa",
-          100: "#ccfbf1",
-          200: "#99f6e4",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
-        },
-        medical: {
-          bg:   "#f0f9ff",
-          card: "#ffffff",
-          hero: "#e0f7fa",
-        },
-      },
-      borderRadius: {
-        "2xl": "1rem",
-        "3xl": "1.5rem",
-        "4xl": "2rem",
+        page:    token("page"),
+        frame:   token("frame"),
+        panel:   token("panel"),
+        panel2:  token("panel-2"),
+        raise:   token("raise"),
+        ink:     token("ink"),
+        muted:   token("muted"),
+        dim:     token("dim"),
+        accent:  token("accent"),
+        accent2: token("accent-2"),
+        pill:    token("pill"),
+        good:    token("good"),
+        warn:    token("warn"),
+        serious: token("serious"),
+        bad:     token("bad"),
+        line:    "var(--line)",
       },
       fontFamily: {
-        sans:  ["Inter", "system-ui", "sans-serif"],
-        serif: ["Merriweather", "Georgia", "serif"],
+        sans:    ["Onest", "system-ui", "Segoe UI", "sans-serif"],
+        display: ["Bricolage Grotesque", "Onest", "system-ui", "sans-serif"],
+        mono:    ["Martian Mono", "ui-monospace", "Consolas", "monospace"],
+      },
+      borderRadius: {
+        "4xl": "2rem",
+        card: "26px",
+        frame: "34px",
       },
       boxShadow: {
-        card:       "0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.08)",
-        "card-hover": "0 4px 16px rgba(0,0,0,0.1), 0 16px 48px rgba(0,0,0,0.12)",
-        hero:       "0 12px 48px rgba(20,184,166,0.25)",
-        teal:       "0 8px 24px rgba(20,184,166,0.4)",
-        glow:       "0 0 0 4px rgba(20,184,166,0.15)",
+        elev1: "var(--elev-1)",
+        elev2: "var(--elev-2)",
+        glow:  "0 10px 26px -10px var(--glow)",
+        frame: "var(--shadow-frame)",
       },
-      keyframes: {
-        fadeIn:    { from: { opacity: "0", transform: "translateY(10px)" }, to: { opacity: "1", transform: "translateY(0)" } },
-        slideIn:   { from: { opacity: "0", transform: "translateX(-16px)" }, to: { opacity: "1", transform: "translateX(0)" } },
-        scaleIn:   { from: { opacity: "0", transform: "scale(0.95)" }, to: { opacity: "1", transform: "scale(1)" } },
-      },
-      animation: {
-        "fade-in":  "fadeIn 0.35s ease-out both",
-        "slide-in": "slideIn 0.3s ease-out both",
-        "scale-in": "scaleIn 0.25s ease-out both",
+      backgroundImage: {
+        hero: "var(--hero)",
       },
     },
   },

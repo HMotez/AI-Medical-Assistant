@@ -252,9 +252,19 @@ _text_parser: Optional[SymptomTextParser] = None
 
 
 def extract_symptoms(text: str) -> dict:
-    """Free-text description (English or French) -> known symptom names."""
+    """
+    Free-text description (English or French) -> known symptom names.
+    Uses Claude when an API key is configured; otherwise, or if Claude is
+    unavailable, the offline rule-based parser.
+    """
+    from app.services import claude_client
+    ai = claude_client.extract_symptoms(text, get_all_symptoms())
+    if ai is not None:
+        return {**ai, "matches": [], "source": "ai"}
+
     global _text_parser
     if _text_parser is None:
         _text_parser = SymptomTextParser(get_all_symptoms())
     result = _text_parser.parse(text)
-    return {"symptoms": result.symptoms, "negated": result.negated, "matches": result.matches}
+    return {"symptoms": result.symptoms, "negated": result.negated,
+            "matches": result.matches, "source": "rules"}

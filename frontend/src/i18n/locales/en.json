@@ -54,7 +54,9 @@
       "4_7d": "4–7 days",
       "1_4w": "1–4 weeks",
       "gt_1m": "More than a month"
-    }
+    },
+    "themeLight": "Switch to light theme",
+    "themeDark": "Switch to dark theme"
   },
   "nav": {
     "home": "Home",
@@ -96,14 +98,12 @@
     "heroTitle2": "Analyzed by AI",
     "heroText": "Get instant AI-powered symptom analysis, specialist recommendations, and downloadable medical reports.",
     "stats": {
-      "patients": "Patients",
       "diseases": "Diseases",
       "accuracy": "Top-3 accuracy",
-      "private": "Private"
+      "private": "Private",
+      "symptoms": "Symptoms"
     },
-    "testimonial": "\"AI Medical helped me identify my condition before my appointment. The report I brought to my doctor was incredibly detailed.\"",
-    "verifiedPatient": "Verified Patient",
-    "footer": "Protected by 256-bit encryption · HIPAA compliant · No data sharing",
+    "footer": "Passwords stored hashed · Data never sold · Not a substitute for a doctor",
     "title": "Welcome back",
     "subtitle": "Sign in to access your medical portal",
     "email": "Email Address",
@@ -120,15 +120,15 @@
     "badge": "Free Forever",
     "heroTitle1": "Start analyzing",
     "heroTitle2": "your health today",
-    "heroText": "Join thousands of patients who trust AI Medical for fast, private, and accurate symptom analysis.",
+    "heroText": "Describe your symptoms in English or French and get a clear, explained analysis in seconds.",
     "perks": {
       "analysis": "Instant AI symptom analysis",
       "reports": "Professional PDF medical reports",
       "tracking": "Track your health over time",
-      "privacy": "100% private — zero data sharing"
+      "privacy": "Private: your data is never sold"
     },
-    "privacyTitle": "Medical Grade Privacy",
-    "privacyText": "Your health data is encrypted end-to-end, never sold, never shared. You own your data.",
+    "privacyTitle": "Your data stays yours",
+    "privacyText": "Passwords are stored hashed. Your health data is used only for your analyses and is never sold or shared with advertisers. You can delete your account at any time.",
     "footer": "No credit card · No hidden fees · Cancel anytime",
     "title": "Create your account",
     "subtitle": "Free sign-up — takes 30 seconds",
@@ -166,7 +166,8 @@
         "free": "Free forever",
         "private": "100% private",
         "noAds": "No ads"
-      }
+      },
+      "stageLabel": "How the model links symptoms to conditions"
     },
     "quick": {
       "specialty": "Specialty",
@@ -217,11 +218,18 @@
     },
     "stats": {
       "tag": "Platform Stats",
-      "title": "Trusted by Patients Worldwide",
+      "title": "The model behind your analysis",
       "diseases": "Diseases Covered",
       "symptoms": "Symptoms Tracked",
       "accuracy": "Top-3 Accuracy",
-      "response": "Response Time"
+      "response": "Response Time",
+      "languages": "Languages",
+      "captions": {
+        "diseases": "Learned from 303 distinct clinical profiles",
+        "symptoms": "Describe them in your own words",
+        "accuracy": "Correct condition ranked in the top 3, cross-validated",
+        "languages": "English and French, switch at any time"
+      }
     },
     "services": {
       "tag": "Features",
@@ -246,7 +254,7 @@
         },
         "privacy": {
           "title": "Data Privacy",
-          "desc": "Your health data is encrypted end-to-end and never sold or shared with third parties."
+          "desc": "Passwords are stored hashed, and your health data is never sold or shared with advertisers."
         },
         "review": {
           "title": "Doctor Review",
@@ -287,7 +295,9 @@
         "moderate": "Schedule within a week",
         "low": "Monitor symptoms, stay hydrated"
       },
-      "cta": "Check My Symptoms"
+      "cta": "Check My Symptoms",
+      "unit_one": "condition",
+      "unit_other": "conditions"
     },
     "contact": {
       "tag": "Contact",
@@ -306,8 +316,8 @@
         },
         "privacy": {
           "title": "Privacy",
-          "value": "100% Encrypted",
-          "sub": "Your data is never sold or shared"
+          "value": "Never sold",
+          "sub": "Your data is used only for your analyses"
         }
       },
       "emergencyTitle": "Emergency Numbers",
@@ -322,7 +332,7 @@
       "policies": {
         "privacy": {
           "title": "Data Privacy",
-          "desc": "Your health data is encrypted end-to-end and never sold or shared with third parties."
+          "desc": "Passwords are stored hashed. Your health data is used only to run your analyses and is never sold or shared with advertisers."
         },
         "notReplacement": {
           "title": "Not a Replacement",
@@ -361,7 +371,14 @@
     },
     "recent": "Recent Analyses",
     "emptyText": "Start your first AI symptom analysis",
-    "startFirst": "Start First Analysis"
+    "startFirst": "Start First Analysis",
+    "kpi": {
+      "total": "Analyses",
+      "latest": "Latest result",
+      "urgency": "Latest urgency",
+      "lastCheck": "Last check"
+    },
+    "shortcuts": "Shortcuts"
   },
   "history": {
     "records": "Patient Records",
@@ -477,7 +494,8 @@
       "extractFailed": "Could not read your description. Please select symptoms from the list.",
       "minOne": "Please select at least 1 symptom.",
       "failed": "Analysis failed. Please try again."
-    }
+    },
+    "readByAI": "Read by AI"
   },
   "results": {
     "loadError": "Failed to load analysis.",
@@ -523,7 +541,13 @@
     "corrected": "Corrected: {{disease}}",
     "chatTitle": "Questions about this result?",
     "chatText": "MedAI can explain your result and answer follow-up questions.",
-    "openChat": "Open Chat"
+    "openChat": "Open Chat",
+    "chart": {
+      "rank": "Rank {{rank}}",
+      "supportsTip": "Raises the probability of {{disease}} by {{value}} points",
+      "againstTip": "Lowers the probability of {{disease}} by {{value}} points",
+      "unit": "Values in percentage points"
+    }
   },
   "doctor": {
     "portal": "Doctor Portal",

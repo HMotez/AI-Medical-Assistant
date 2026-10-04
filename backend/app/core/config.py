@@ -25,8 +25,11 @@ class Settings(BaseSettings):
     # ML
     ML_MODEL_PATH: str = "ml/models/saved/model.joblib"
 
-    # AI Chat (optional — enables Claude-powered assistant)
+    # AI Chat (optional — enables Claude-powered assistant and symptom reading)
     ANTHROPIC_API_KEY: str = ""
+    CLAUDE_MODEL: str = "claude-opus-5-5"
+    CLAUDE_CHAT_EFFORT: str = "low"          # low | medium | high — low keeps replies fast and cheap
+    CLAUDE_TIMEOUT_SECONDS: float = 60.0
 
 
 settings = Settings()

@@ -28,3 +28,24 @@ export const PHOTOS = {
   /* Admin dashboard — medical team meeting around table */
   adminDash: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?auto=format&fit=crop&w=1400&q=80",
 };
+
+/* Route → background photo (first match wins) */
+const ROUTE_PHOTOS = [
+  ["/patient/analyze",  PHOTOS.symptomChecker],
+  ["/patient/results",  PHOTOS.results],
+  ["/patient/history",  PHOTOS.history],
+  ["/patient/trends",   PHOTOS.history],
+  ["/patient/chat",     PHOTOS.doctorDash],
+  ["/patient",          PHOTOS.patientDash],
+  ["/doctor/analysis",  PHOTOS.results],
+  ["/doctor",           PHOTOS.doctorDash],
+  ["/admin/diseases",   PHOTOS.results],
+  ["/admin",            PHOTOS.adminDash],
+  ["/login",            PHOTOS.login],
+  ["/register",         PHOTOS.register],
+];
+
+export function photoForPath(pathname) {
+  const hit = ROUTE_PHOTOS.find(([prefix]) => pathname === prefix || pathname.startsWith(prefix + "/"));
+  return hit ? hit[1] : PHOTOS.hero;
+}

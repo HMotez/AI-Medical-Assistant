@@ -4,14 +4,20 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import axiosClient from "../../api/axiosClient";
 import UrgencyBadge from "../../components/UrgencyBadge";
+import ConstellationStage from "../../components/three/ConstellationStage";
 import { useMedicalLabels } from "../../i18n/medical";
 import { dateLocale } from "../../i18n";
-import { Activity, Plus, Clock, ChevronRight, FileText, User, Stethoscope } from "lucide-react";
+import { PHOTOS } from "../../constants/photos";
+import {
+  Activity, Plus, Clock, ChevronRight, FileText, User, MessageSquare, TrendingUp, Loader2, HeartPulse, CalendarDays
+} from "lucide-react";
+import StatTile from "../../components/ui/StatTile";
 
-const QUICK = [
-  { to: "/patient/analyze", Icon: Plus,  key: "analyze", color: "from-teal-400 to-emerald-500" },
-  { to: "/patient/history", Icon: Clock, key: "history", color: "from-blue-400 to-cyan-500" },
-  { to: "/patient/profile", Icon: User,  key: "profile", color: "from-purple-400 to-violet-500" },
+const SHORTCUTS = [
+  { to: "/patient/history", Icon: Clock,         key: "history" },
+  { to: "/patient/trends",  Icon: TrendingUp,    key: "trends" },
+  { to: "/patient/chat",    Icon: MessageSquare, key: "chat" },
+  { to: "/patient/profile", Icon: User,          key: "profile" },
 ];
 
 export default function PatientDashboard() {
@@ -23,94 +29,97 @@ export default function PatientDashboard() {
 
   useEffect(() => {
     axiosClient.get("/api/analysis/")
-      .then(r => setAnalyses(r.data.slice(0, 5)))
+      .then(r => setAnalyses(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <div className="min-h-screen p-6 sm:p-8">
+  const latest = analyses[0];
+  const fmtDate = (d) => new Date(d).toLocaleDateString(dateLocale(), { dateStyle: "medium" });
 
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/25">
-          <Stethoscope className="w-8 h-8 text-white" />
+  return (
+    <div className="grid gap-4">
+      <ConstellationStage photo={PHOTOS.patientDash}>
+        <span className="pill pill-glass w-fit mb-4"><Activity className="w-3.5 h-3.5" /> {t("dashboard.portal")}</span>
+        <h1 className="text-[clamp(1.9rem,3.4vw,2.6rem)] font-bold leading-[1.05]">
+          {t("dashboard.hello", { name: user?.full_name?.split(" ")[0] || "" })}
+        </h1>
+        <p className="text-white/85 text-[15.5px] mt-2 max-w-sm">{t("dashboard.overview")}</p>
+        <div className="flex flex-wrap gap-2.5 mt-5">
+          <Link to="/patient/analyze" className="btn-primary btn-light"><Plus className="w-4 h-4" /> {t("common.newAnalysis")}</Link>
+          <Link to="/patient/chat" className="btn-ghost !bg-white/15 !text-white"><MessageSquare className="w-4 h-4" /> {t("sidebar.patient.chat")}</Link>
         </div>
-        <div>
-          <p className="text-teal-300 text-xs font-black uppercase tracking-widest mb-1">{t("dashboard.portal")}</p>
-          <h1 className="text-3xl font-black text-white">{t("dashboard.hello", { name: user?.full_name?.split(" ")[0] || "" })}</h1>
-          <p className="text-white/50 text-sm mt-0.5">{t("dashboard.overview")}</p>
-        </div>
+      </ConstellationStage>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3.5">
+        <StatTile label={t("dashboard.kpi.total")} value={loading ? null : analyses.length} icon={Activity} />
+        <StatTile label={t("dashboard.kpi.latest")} icon={FileText}>
+          <span className="block truncate">{latest?.top_disease ? labels.disease(latest.top_disease) : "—"}</span>
+        </StatTile>
+        <StatTile label={t("dashboard.kpi.urgency")} icon={HeartPulse}>
+          {latest ? <UrgencyBadge level={latest.urgency_level} /> : "—"}
+        </StatTile>
+        <StatTile label={t("dashboard.kpi.lastCheck")} icon={CalendarDays}>
+          {latest ? fmtDate(latest.created_at) : "—"}
+        </StatTile>
       </div>
 
-      <div className="max-w-4xl space-y-6">
-
-        {/* Quick actions */}
-        <div className="grid md:grid-cols-3 gap-4">
-          {QUICK.map(({ to, Icon, key, color }) => (
-            <Link key={to} to={to}
-              className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 flex items-center gap-4 group hover:-translate-y-1 hover:bg-white/15 hover:border-white/30 transition-all duration-200">
-              <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-black text-white">{t(`dashboard.quick.${key}.label`)}</div>
-                <div className="text-xs text-white/50 mt-0.5">{t(`dashboard.quick.${key}.sub`)}</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-teal-300 transition-colors" />
-            </Link>
-          ))}
-        </div>
-
+      <div className="grid xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4">
         {/* Recent analyses */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-            <h2 className="font-black text-white flex items-center gap-2.5 text-lg">
-              <Activity className="w-5 h-5 text-teal-400" /> {t("dashboard.recent")}
-            </h2>
-            <Link to="/patient/history" className="text-sm font-bold text-teal-300 hover:text-teal-200 flex items-center gap-1 transition-colors">
-              {t("common.viewAll")} <ChevronRight className="w-4 h-4" />
-            </Link>
+        <section className="card">
+          <div className="card-head">
+            <div className="card-icon"><Activity className="w-5 h-5" /></div>
+            <div className="flex-1 min-w-0"><h2>{t("dashboard.recent")}</h2></div>
+            <Link to="/patient/history" className="btn-ghost btn-sm">{t("common.viewAll")} <ChevronRight className="w-3.5 h-3.5" /></Link>
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-16">
-              <div className="w-8 h-8 border-4 border-teal-400 border-t-transparent rounded-full animate-spin" />
-            </div>
+            <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 text-accent animate-spin" /></div>
           ) : analyses.length === 0 ? (
-            <div className="text-center py-16 px-6">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Activity className="w-8 h-8 text-white/30" />
-              </div>
-              <p className="font-black text-white/70 mb-1 text-lg">{t("common.noAnalyses")}</p>
-              <p className="text-sm text-white/40 mb-6">{t("dashboard.emptyText")}</p>
-              <Link to="/patient/analyze" className="btn-primary text-sm gap-2">
-                <Plus className="w-4 h-4" /> {t("dashboard.startFirst")}
-              </Link>
+            <div className="text-center py-10">
+              <div className="card-icon mx-auto"><Activity className="w-5 h-5" /></div>
+              <p className="font-display font-bold mt-3">{t("common.noAnalyses")}</p>
+              <p className="text-muted text-[14.5px] mt-1 mb-5">{t("dashboard.emptyText")}</p>
+              <Link to="/patient/analyze" className="btn-primary"><Plus className="w-4 h-4" /> {t("dashboard.startFirst")}</Link>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
-              {analyses.map(a => (
+            <div className="grid gap-2">
+              {analyses.slice(0, 5).map(a => (
                 <Link key={a.id} to={`/patient/results/${a.id}`}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-white/8 group transition-colors">
-                  <div className="w-11 h-11 bg-teal-500/20 rounded-xl flex items-center justify-center shrink-0 border border-teal-400/20">
-                    <FileText className="w-5 h-5 text-teal-300" />
-                  </div>
+                  className="group flex items-center gap-3.5 rounded-[20px] border border-line bg-panel px-3 py-2.5 transition-all hover:bg-raise hover:translate-x-1">
+                  <div className="w-10 h-10 rounded-xl grid place-items-center bg-accent/10 text-accent shrink-0"><FileText className="w-[18px] h-[18px]" /></div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-white text-sm truncate">
+                    <div className="text-[15.5px] font-semibold truncate">
                       {a.top_disease ? labels.disease(a.top_disease) : t("common.analysisNumber", { id: a.id })}
                     </div>
-                    <div className="text-xs text-white/40 mt-0.5">
-                      {new Date(a.created_at).toLocaleDateString(dateLocale(), { dateStyle: "medium" })}
-                    </div>
+                    <div className="text-[13.5px] text-muted">{fmtDate(a.created_at)}</div>
                   </div>
                   <UrgencyBadge level={a.urgency_level} />
-                  <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-teal-300 transition-colors shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-dim group-hover:text-accent shrink-0" />
                 </Link>
               ))}
             </div>
           )}
-        </div>
+        </section>
+
+        {/* Shortcuts */}
+        <section className="card">
+          <div className="card-head">
+            <div className="card-icon"><ChevronRight className="w-5 h-5" /></div>
+            <h2>{t("dashboard.shortcuts")}</h2>
+          </div>
+          <div className="grid gap-2">
+            {SHORTCUTS.map(({ to, Icon, key }) => (
+              <Link key={to} to={to}
+                className="group flex items-center gap-3.5 rounded-[20px] bg-panel2 px-3 py-3 transition-all hover:bg-raise hover:translate-x-1">
+                <div className="w-10 h-10 rounded-xl grid place-items-center bg-panel text-accent shrink-0 shadow-elev1"><Icon className="w-[18px] h-[18px]" /></div>
+                <span className="flex-1 text-[15.5px] font-semibold">{t(`sidebar.patient.${key}`)}</span>
+                <ChevronRight className="w-4 h-4 text-dim group-hover:text-accent" />
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

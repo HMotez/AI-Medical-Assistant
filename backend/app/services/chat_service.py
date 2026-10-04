@@ -1,31 +1,38 @@
 """
 Medical chat assistant.
-Uses Claude Haiku when ANTHROPIC_API_KEY is set; falls back to rule-based replies.
+Uses Claude (settings.CLAUDE_MODEL) when ANTHROPIC_API_KEY is set, streaming the
+reply as it is written; falls back to rule-based replies otherwise.
 """
 from __future__ import annotations
 import logging
 import re
+from typing import Iterator
+
 from app.core.config import settings
+from app.services import claude_client, offline_answers
 from app.services.labels import normalize_lang
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are MedAI, an empathetic AI medical assistant embedded in the AI Medical Assistant platform.
+# Only the most recent turns are sent, to keep cost and latency bounded
+MAX_HISTORY_MESSAGES = 20
+MAX_REPLY_TOKENS = 4096   # covers Claude's (hidden) thinking as well as the reply
 
-Your role:
-- Help patients understand their symptoms clearly
-- Ask ONE focused follow-up question per reply to refine understanding
-- Explain medical terms in plain language
-- Provide general health guidance and when to seek care
-- Discuss analysis results when context is provided
+SYSTEM_PROMPT = """You are MedAI, the assistant inside the AI Medical Assistant platform. You help patients understand their symptoms and the results of the platform's AI symptom analysis.
 
-Rules:
-- NEVER give a definitive diagnosis — always recommend consulting a doctor
-- Be warm, professional, and concise (2–4 sentences per response)
-- Respond in the same language the user writes in (French or English)
-- If urgency is 'emergency', strongly advise calling emergency services immediately
-- When symptoms suggest something serious, say so calmly but clearly
-"""
+How to answer:
+- Be warm, calm and clear. Use plain language and explain any medical term you use.
+- Keep replies short: usually 2 to 5 sentences. Use a short "- " list only when listing several items.
+- Write plain text. Do not use Markdown headings, tables, bold or code formatting.
+- When it would help, end with one focused follow-up question.
+
+Medical safety:
+- You do not diagnose. The analysis gives likely conditions, not a diagnosis; say so when discussing it, and recommend seeing a doctor (name the recommended specialist when you know it).
+- If the patient describes or the analysis shows warning signs (chest pain with breathlessness, stroke signs, confusion, severe bleeding, very high fever with a stiff neck) or an emergency urgency level, tell them clearly to call their local emergency number or go to the emergency department now, before anything else.
+- Do not recommend prescription drugs or doses. General self-care advice (rest, fluids, when to seek care) is fine.
+- If a question is outside health, briefly say you can only help with health questions."""
+
+LANGUAGE_NAMES = {"fr": "French", "en": "English"}
 
 # Simple rule-based fallback when no API key is configured: (pattern, {lang: reply})
 FALLBACK_RESPONSES = [
@@ -58,12 +65,10 @@ FALLBACK_RESPONSES = [
 DEFAULT_FALLBACK = {
     "fr": ("Je comprends votre préoccupation. Pour vous aider au mieux, "
            "pourriez-vous me décrire vos symptômes plus en détail ? "
-           "Depuis combien de temps les ressentez-vous et quelle est leur intensité ?\n\n"
-           "*(Note : configurez ANTHROPIC_API_KEY dans le fichier .env pour activer l'IA avancée.)*"),
+           "Depuis combien de temps les ressentez-vous et quelle est leur intensité ?"),
     "en": ("I understand your concern. To help you as well as I can, "
            "could you describe your symptoms in more detail? "
-           "How long have you had them, and how severe are they?\n\n"
-           "*(Note: set ANTHROPIC_API_KEY in the .env file to enable the advanced AI.)*"),
+           "How long have you had them, and how severe are they?"),
 }
 
 AI_ERROR = {
@@ -71,10 +76,17 @@ AI_ERROR = {
     "en": "Sorry, the AI assistant is temporarily unavailable. Here is a simplified answer:",
 }
 
-LANGUAGE_NAMES = {"fr": "French", "en": "English"}
+REFUSAL = {
+    "fr": "Je ne peux pas répondre à cette question. Pour toute inquiétude sur votre santé, consultez un médecin ; en cas d'urgence, appelez votre numéro d'urgence local.",
+    "en": "I can't help with that question. For any health concern please see a doctor, and in an emergency call your local emergency number.",
+}
 
 
-def _rule_based_reply(message: str, lang: str) -> str:
+def _rule_based_reply(message: str, lang: str, analysis=None) -> str:
+    # Questions about the analysis, urgency, warning signs or self-care get a real answer
+    contextual = offline_answers.answer(message, lang, analysis)
+    if contextual:
+        return contextual
     msg_lower = message.lower()
     for pattern, replies in FALLBACK_RESPONSES:
         if re.search(pattern, msg_lower):
@@ -82,7 +94,43 @@ def _rule_based_reply(message: str, lang: str) -> str:
     return DEFAULT_FALLBACK[lang]
 
 
-def _build_context_block(context) -> str:
+# ── Context from the patient's analysis ─────────────────────────────────────
+
+def describe_analysis(analysis) -> str:
+    """Plain-text summary of a stored Analysis for the system prompt."""
+    lines = []
+    preds = sorted(analysis.predictions, key=lambda p: p.rank)
+    if preds:
+        lines.append("Most likely conditions (model probability): " + "; ".join(
+            f"{p.disease.name} {p.confidence_score:.0%}" for p in preds if p.disease))
+    if analysis.urgency_level:
+        lines.append(f"Urgency level: {analysis.urgency_level.value}")
+    if analysis.recommended_specialist:
+        lines.append(f"Recommended specialist: {analysis.recommended_specialist}")
+    symptoms = [s.name.replace("_", " ") for s in analysis.symptoms]
+    if symptoms:
+        lines.append("Reported symptoms: " + ", ".join(symptoms))
+    if analysis.severity:
+        lines.append(f"Self-rated severity: {analysis.severity}/10")
+    if analysis.symptom_duration:
+        lines.append(f"Duration code: {analysis.symptom_duration}")
+    details = analysis.ml_details or {}
+    for flag in details.get("red_flags", []):
+        lines.append(f"Warning sign ({flag.get('level')}): {flag.get('message')}")
+    if details.get("is_uncertain"):
+        lines.append("The analysis is uncertain: the symptoms match several conditions.")
+    if analysis.free_text:
+        lines.append(f'Patient\'s own words: "{analysis.free_text}"')
+    review = analysis.doctor_comment
+    if review:
+        lines.append(f"Doctor's review: {review.comment}"
+                     + (f" (corrected diagnosis: {review.corrected_disease})" if review.corrected_disease else ""))
+    created = analysis.created_at.strftime("%Y-%m-%d") if analysis.created_at else "unknown date"
+    return f"Latest analysis ({created}):\n" + "\n".join(f"- {line}" for line in lines)
+
+
+def _legacy_context(context) -> str:
+    """Context sent by older clients as loose fields."""
     if not context:
         return ""
     parts = []
@@ -94,45 +142,87 @@ def _build_context_block(context) -> str:
         parts.append(f"Urgency level: {context.urgency}")
     if context.specialist:
         parts.append(f"Recommended specialist: {context.specialist}")
-    if not parts:
-        return ""
-    return "\n\nPatient context from latest analysis:\n" + "\n".join(f"- {p}" for p in parts)
+    return ("Latest analysis:\n" + "\n".join(f"- {p}" for p in parts)) if parts else ""
 
 
-def chat(message: str, history: list, context, language: str | None = None) -> dict:
+def _system_prompt(lang: str, context_text: str) -> str:
+    prompt = (SYSTEM_PROMPT
+              + f"\n\nThe app interface is in {LANGUAGE_NAMES[lang]}. Reply in {LANGUAGE_NAMES[lang]} "
+                "unless the patient writes in another language, then use theirs.")
+    if context_text:
+        prompt += ("\n\nThe patient's latest analysis from the platform is below. Use it when it is relevant, "
+                   "and remind them it is not a diagnosis.\n<analysis>\n" + context_text + "\n</analysis>")
+    return prompt
+
+
+def _messages(message: str, history: list) -> list[dict]:
+    """Recent history + the new message; the conversation must start with a user turn."""
+    turns = [{"role": m.role, "content": m.content} for m in history
+             if m.role in ("user", "assistant") and m.content.strip()][-MAX_HISTORY_MESSAGES:]
+    while turns and turns[0]["role"] != "user":
+        turns.pop(0)   # e.g. the app's own welcome message
+    return turns + [{"role": "user", "content": message}]
+
+
+# ── Chat ─────────────────────────────────────────────────────────────────────
+
+def stream_chat(message: str, history: list, language: str | None = None,
+                context_text: str = "", analysis=None) -> Iterator[dict]:
+    """
+    Yields events:
+      {"type": "text", "text": "..."}         a piece of the reply
+      {"type": "refusal", "text": "..."}      replace anything shown so far with this text
+      {"type": "done", "model_used": "..."}   always last
+    """
     lang = normalize_lang(language)
-    api_key = getattr(settings, "ANTHROPIC_API_KEY", None)
 
-    if not api_key:
-        return {"reply": _rule_based_reply(message, lang), "model_used": "rule-based"}
+    if not claude_client.is_enabled():
+        yield {"type": "text", "text": _rule_based_reply(message, lang, analysis)}
+        yield {"type": "done", "model_used": "rule-based"}
+        return
 
+    sent_text = False
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-
-        system = (
-            SYSTEM_PROMPT
-            + f"\nThe app interface is in {LANGUAGE_NAMES[lang]}; use it unless the user writes in another language."
-            + _build_context_block(context)
-        )
-
-        messages = [{"role": m.role, "content": m.content} for m in history]
-        messages.append({"role": "user", "content": message})
-
-        response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=600,
-            system=system,
-            messages=messages,
-        )
-        return {
-            "reply": response.content[0].text,
-            "model_used": "claude-haiku-4-5",
-        }
+        with claude_client.client().beta.messages.stream(
+            **claude_client.request_options(settings.CLAUDE_CHAT_EFFORT),
+            max_tokens=MAX_REPLY_TOKENS,
+            system=_system_prompt(lang, context_text),
+            messages=_messages(message, history),
+        ) as stream:
+            for text in stream.text_stream:
+                if text:
+                    sent_text = True
+                    yield {"type": "text", "text": text}
+            final = stream.get_final_message()
     except Exception:
         # Details go to the server log, never to the patient
         logger.exception("Claude chat request failed")
-        return {
-            "reply": AI_ERROR[lang] + "\n\n" + _rule_based_reply(message, lang),
-            "model_used": "rule-based-fallback",
-        }
+        fallback = _rule_based_reply(message, lang, analysis)
+        if sent_text:
+            yield {"type": "refusal", "text": AI_ERROR[lang] + "\n\n" + fallback}
+        else:
+            yield {"type": "text", "text": AI_ERROR[lang] + "\n\n" + fallback}
+        yield {"type": "done", "model_used": "rule-based-fallback"}
+        return
+
+    if final.stop_reason == "refusal":
+        # Every model in the fallback chain declined: discard any partial reply
+        logger.info("Chat refused (category=%s)", getattr(final.stop_details, "category", None))
+        yield {"type": "refusal", "text": REFUSAL[lang]}
+    yield {"type": "done", "model_used": final.model}
+
+
+def chat(message: str, history: list, context=None, language: str | None = None,
+         context_text: str | None = None, analysis=None) -> dict:
+    """Non-streaming variant: collects the streamed reply into one string."""
+    if context_text is None:
+        context_text = _legacy_context(context)
+    reply, model_used = "", "rule-based"
+    for event in stream_chat(message, history, language, context_text, analysis):
+        if event["type"] == "text":
+            reply += event["text"]
+        elif event["type"] == "refusal":
+            reply = event["text"]
+        elif event["type"] == "done":
+            model_used = event["model_used"]
+    return {"reply": reply, "model_used": model_used}

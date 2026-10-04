@@ -1,42 +1,37 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
+import PageHead from "../../components/ui/PageHead";
+import useChartTip from "../../components/charts/useChartTip";
 import {
-  BarChart2, Activity, Users, Stethoscope, FileText,
-  TrendingUp, AlertTriangle, Zap, CheckCircle, AlertCircle,
-  Loader2
+  Activity, Users, Stethoscope, FileText, TrendingUp, AlertTriangle, Zap, CheckCircle, AlertCircle, Loader2, HeartPulse
 } from "lucide-react";
+import StatTile from "../../components/ui/StatTile";
 
-function Bar({ label, value, max, color }) {
-  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+/** Horizontal bars on one scale; values at the tip, tooltip on hover. */
+function Bars({ rows, max }) {
+  const { bind, node } = useChartTip();
   return (
-    <div className="flex items-center gap-4">
-      <div className="w-28 text-sm font-semibold text-white/70 text-right shrink-0">{label}</div>
-      <div className="flex-1 h-8 bg-white/10 rounded-full overflow-hidden border border-white/10">
-        <div
-          className={`h-full ${color} rounded-full flex items-center pl-3 transition-all duration-700`}
-          style={{ width: `${Math.max(pct, 4)}%` }}
-        >
-          <span className="text-white text-xs font-black">{value}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, Icon, gradient, sub }) {
-  return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:-translate-y-0.5 transition-all">
-      <div className={`bg-gradient-to-r ${gradient} px-5 py-4 flex items-center gap-3`}>
-        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-          <Icon className="w-5 h-5 text-white" />
-        </div>
-        <span className="text-white/85 text-xs font-black uppercase tracking-wide">{label}</span>
-      </div>
-      <div className="px-5 py-4">
-        <div className="text-4xl font-black text-white">{value ?? "—"}</div>
-        {sub && <div className="text-xs text-white/40 mt-1">{sub}</div>}
-      </div>
+    <div className="grid gap-3.5">
+      {rows.map(({ key, label, value, color, Icon }) => {
+        const width = max > 0 ? `${Math.max((value / max) * 100, value > 0 ? 2 : 0)}%` : "0%";
+        return (
+          <div key={key} className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-3 items-center text-[15px]">
+            <span className="flex items-center gap-2 min-w-0">
+              {Icon && <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />}
+              <span className="truncate">{label}</span>
+            </span>
+            <div className="relative h-[18px]">
+              <div className="absolute -inset-y-1.5 inset-x-0 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, var(--chart-grid) 1px, transparent 1px) 0 0 / 25% 100%", borderRight: "1px solid var(--chart-grid)" }} />
+              <div className="absolute inset-y-0 left-0 rounded-r" style={{ width, background: color }} />
+              <span className="font-data absolute top-1/2 -translate-y-1/2 text-[13.5px] text-ink" style={{ left: `calc(${width} + 8px)` }}>{value}</span>
+              <div className="absolute -inset-y-1.5 inset-x-0" {...bind(<><b>{label}</b><br />{value}</>)} />
+            </div>
+          </div>
+        );
+      })}
+      {node}
     </div>
   );
 }
@@ -47,135 +42,87 @@ export default function AdminStats() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axiosClient.get("/api/admin/stats")
-      .then(r => setStats(r.data))
-      .finally(() => setLoading(false));
+    axiosClient.get("/api/admin/stats").then(r => setStats(r.data)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="w-10 h-10 text-teal-400 animate-spin" />
-    </div>
-  );
+  if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-8 h-8 text-accent animate-spin" /></div>;
 
-  const urgencyData = [
-    { key: "emergency", value: stats?.urgency_emergency ?? 0, color: "bg-red-500",    Icon: Zap,           cls: "urgency-emergency" },
-    { key: "high",      value: stats?.urgency_high      ?? 0, color: "bg-orange-500", Icon: AlertTriangle, cls: "urgency-high" },
-    { key: "moderate",  value: stats?.urgency_moderate  ?? 0, color: "bg-amber-500",  Icon: AlertCircle,   cls: "urgency-moderate" },
-    { key: "low",       value: stats?.urgency_low       ?? 0, color: "bg-green-500",  Icon: CheckCircle,   cls: "urgency-low" },
+  // Urgency uses the status colors, always with icon + word
+  const urgencyRows = [
+    { key: "emergency", value: stats?.urgency_emergency ?? 0, color: "rgb(var(--bad))",     Icon: Zap },
+    { key: "high",      value: stats?.urgency_high      ?? 0, color: "rgb(var(--serious))", Icon: AlertTriangle },
+    { key: "moderate",  value: stats?.urgency_moderate  ?? 0, color: "rgb(var(--warn))",    Icon: AlertCircle },
+    { key: "low",       value: stats?.urgency_low       ?? 0, color: "rgb(var(--good))",    Icon: CheckCircle },
+  ].map(r => ({ ...r, label: t(`common.urgency.${r.key}`) }));
+
+  // Roles: one series, one hue
+  const roleRows = [
+    { key: "patient", value: stats?.total_patients ?? 0 },
+    { key: "doctor",  value: stats?.total_doctors  ?? 0 },
+    { key: "admin",   value: stats?.total_admins   ?? 0 },
+  ].map(r => ({ ...r, color: "var(--chart-series)", label: t(`admin.stats.rolesPlural.${r.key}`) }));
+
+  const pct = (a, b) => (b > 0 ? `${Math.round((a / b) * 100)}%` : "0%");
+  const health = [
+    { key: "avg",           value: stats?.total_patients > 0 ? ((stats.total_analyses || 0) / stats.total_patients).toFixed(1) : "0" },
+    { key: "reportRate",    value: pct(stats?.total_reports || 0, stats?.total_analyses || 0) },
+    { key: "emergencyRate", value: pct(stats?.urgency_emergency || 0, stats?.total_analyses || 0) },
+    { key: "coverage",      value: stats?.total_doctors > 0 && stats?.total_patients > 0 ? `1:${Math.round(stats.total_patients / stats.total_doctors)}` : t("admin.stats.na") },
   ];
 
-  const roleData = [
-    { label: t("admin.stats.rolesPlural.patient"), value: stats?.total_patients ?? 0, color: "bg-teal-500" },
-    { label: t("admin.stats.rolesPlural.doctor"),  value: stats?.total_doctors  ?? 0, color: "bg-blue-500" },
-    { label: t("admin.stats.rolesPlural.admin"),   value: stats?.total_admins   ?? 0, color: "bg-purple-500" },
+  const KPIS = [
+    { key: "users",    value: stats?.total_users,    Icon: Users },
+    { key: "analyses", value: stats?.total_analyses, Icon: Activity },
+    { key: "doctors",  value: stats?.total_doctors,  Icon: Stethoscope },
+    { key: "reports",  value: stats?.total_reports,  Icon: FileText },
   ];
-
-  const maxUrgency = Math.max(...urgencyData.map(d => d.value), 1);
-  const maxRole    = Math.max(...roleData.map(d => d.value), 1);
 
   return (
-    <div className="min-h-screen p-6 sm:p-8">
+    <div className="grid gap-4">
+      <PageHead eyebrow={t("admin.administration")} title={t("admin.stats.title")} subtitle={t("admin.stats.subtitle")} />
 
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/25">
-          <BarChart2 className="w-7 h-7 text-white" />
-        </div>
-        <div>
-          <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-1">{t("admin.administration")}</p>
-          <h1 className="text-2xl font-black text-white">{t("admin.stats.title")}</h1>
-          <p className="text-white/50 text-sm mt-0.5">{t("admin.stats.subtitle")}</p>
-        </div>
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3.5">
+        {KPIS.map(({ key, value, Icon }) => (
+          <StatTile key={key} label={t(`admin.stats.cards.${key}.label`)} value={value} icon={Icon}
+            caption={t(`admin.stats.cards.${key}.sub`)} />
+        ))}
       </div>
 
-      <div className="max-w-5xl space-y-6">
-
-        {/* KPI cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label={t("admin.stats.cards.users.label")}    value={stats?.total_users}    Icon={Users}       gradient="from-blue-500 to-blue-700"    sub={t("admin.stats.cards.users.sub")} />
-          <StatCard label={t("admin.stats.cards.analyses.label")} value={stats?.total_analyses} Icon={Activity}    gradient="from-teal-500 to-teal-700"    sub={t("admin.stats.cards.analyses.sub")} />
-          <StatCard label={t("admin.stats.cards.doctors.label")}  value={stats?.total_doctors}  Icon={Stethoscope} gradient="from-purple-500 to-purple-700" sub={t("admin.stats.cards.doctors.sub")} />
-          <StatCard label={t("admin.stats.cards.reports.label")}  value={stats?.total_reports}  Icon={FileText}    gradient="from-green-500 to-green-700"   sub={t("admin.stats.cards.reports.sub")} />
-        </div>
-
-        {/* Charts row */}
-        <div className="grid md:grid-cols-2 gap-6">
-
-          {/* Urgency distribution */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-            <h2 className="font-black text-white text-lg mb-2 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-red-400" /> {t("admin.stats.urgencyTitle")}
-            </h2>
-            <p className="text-xs text-white/40 mb-6">{t("admin.stats.urgencyText")}</p>
-            <div className="space-y-4">
-              {urgencyData.map(({ key, value, color, Icon, cls }) => (
-                <div key={key}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className={`${cls} text-xs`}>
-                      <Icon className="w-3 h-3" /> {t(`common.urgency.${key}`)}
-                    </span>
-                    <span className="text-sm font-black text-white">{value}</span>
-                  </div>
-                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${color} rounded-full transition-all duration-700`}
-                      style={{ width: `${maxUrgency > 0 ? Math.max((value / maxUrgency) * 100, value > 0 ? 4 : 0) : 0}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 pt-4 border-t border-white/10 flex justify-between items-center">
-              <span className="text-sm font-bold text-white/50">{t("admin.stats.totalAnalyses")}</span>
-              <span className="text-xl font-black text-white">{stats?.total_analyses ?? 0}</span>
-            </div>
+      <div className="grid xl:grid-cols-2 gap-4">
+        <section className="card">
+          <div className="card-head">
+            <div className="card-icon"><TrendingUp className="w-5 h-5" /></div>
+            <div><h2>{t("admin.stats.urgencyTitle")}</h2><small>{t("admin.stats.urgencyText")}</small></div>
           </div>
-
-          {/* User roles */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-            <h2 className="font-black text-white text-lg mb-2 flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-400" /> {t("admin.stats.rolesTitle")}
-            </h2>
-            <p className="text-xs text-white/40 mb-6">{t("admin.stats.rolesText")}</p>
-            <div className="space-y-5">
-              {roleData.map(({ label, value, color }) => (
-                <Bar key={label} label={label} value={value} max={maxRole} color={color} />
-              ))}
-            </div>
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <div className="flex gap-3 justify-center">
-                {roleData.map(({ label, value, color }) => (
-                  <div key={label} className="flex items-center gap-1.5 text-xs font-semibold text-white/60">
-                    <div className={`w-3 h-3 rounded-full ${color}`} />
-                    {label}: <span className="font-black text-white">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <Bars rows={urgencyRows} max={Math.max(...urgencyRows.map(r => r.value), 1)} />
+          <div className="flex justify-between items-center mt-5 pt-4 border-t border-line text-[14.5px]">
+            <span className="text-muted">{t("admin.stats.totalAnalyses")}</span>
+            <span className="font-data">{stats?.total_analyses ?? 0}</span>
           </div>
-        </div>
-
-        {/* Platform health */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-          <h2 className="font-black text-white text-lg mb-5 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-teal-400" /> {t("admin.stats.health")}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: t("admin.stats.healthItems.avg"), value: stats?.total_patients > 0 ? ((stats?.total_analyses || 0) / stats.total_patients).toFixed(1) : "0", grad: "from-teal-500/20 to-teal-600/20", border: "border-teal-400/30", text: "text-teal-300" },
-              { label: t("admin.stats.healthItems.reportRate"), value: stats?.total_analyses > 0 ? `${Math.round(((stats?.total_reports || 0) / stats.total_analyses) * 100)}%` : "0%", grad: "from-blue-500/20 to-blue-600/20", border: "border-blue-400/30", text: "text-blue-300" },
-              { label: t("admin.stats.healthItems.emergencyRate"), value: stats?.total_analyses > 0 ? `${Math.round(((stats?.urgency_emergency || 0) / stats.total_analyses) * 100)}%` : "0%", grad: "from-red-500/20 to-red-600/20", border: "border-red-400/30", text: "text-red-300" },
-              { label: t("admin.stats.healthItems.coverage"), value: stats?.total_doctors > 0 && stats?.total_patients > 0 ? `1:${Math.round(stats.total_patients / stats.total_doctors)}` : t("admin.stats.na"), grad: "from-purple-500/20 to-purple-600/20", border: "border-purple-400/30", text: "text-purple-300" },
-            ].map(({ label, value, grad, border, text }) => (
-              <div key={label} className={`bg-gradient-to-br ${grad} border ${border} rounded-2xl p-4 text-center`}>
-                <div className={`text-2xl font-black mb-1 ${text}`}>{value}</div>
-                <div className="text-xs font-semibold text-white/50 leading-snug">{label}</div>
-              </div>
-            ))}
+        </section>
+        <section className="card">
+          <div className="card-head">
+            <div className="card-icon"><Users className="w-5 h-5" /></div>
+            <div><h2>{t("admin.stats.rolesTitle")}</h2><small>{t("admin.stats.rolesText")}</small></div>
           </div>
-        </div>
+          <Bars rows={roleRows} max={Math.max(...roleRows.map(r => r.value), 1)} />
+        </section>
       </div>
+
+      <section className="card">
+        <div className="card-head">
+          <div className="card-icon"><HeartPulse className="w-5 h-5" /></div>
+          <h2>{t("admin.stats.health")}</h2>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {health.map(({ key, value }) => (
+            <div key={key} className="rounded-[20px] bg-panel2 p-4">
+              <div className="font-display text-[25.5px] font-extrabold tabular-nums">{value}</div>
+              <div className="text-[13.5px] text-muted">{t(`admin.stats.healthItems.${key}`)}</div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

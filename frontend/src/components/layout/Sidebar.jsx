@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import LanguageSwitcher from "../LanguageSwitcher";
+import ThemeSwitcher from "../ThemeSwitcher";
+import Logo from "../ui/Logo";
 import {
-  Stethoscope, LayoutDashboard, Activity, ClipboardList,
-  User, LogOut, BarChart2, Microscope, Menu, X,
-  ChevronRight, Shield, MessageSquare, TrendingUp
+  LayoutDashboard, Activity, ClipboardList, User, LogOut, BarChart2,
+  Microscope, Shield, MessageSquare, TrendingUp, X
 } from "lucide-react";
 
 const NAV = {
@@ -28,129 +29,100 @@ const NAV = {
   ],
 };
 
-const ROLE_BADGE = {
-  patient: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-  doctor:  "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  admin:   "bg-red-500/20 text-red-300 border-red-500/30",
-};
-
-export default function Sidebar() {
+/** Sidebar inside the app frame. On small screens it is a drawer (open / onClose). */
+export default function Sidebar({ open = false, onClose = () => {} }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const location  = useLocation();
-  const navigate  = useNavigate();
-  const [open, setOpen] = useState(false);
-
+  const location = useLocation();
+  const navigate = useNavigate();
   const items = NAV[user?.role] || [];
-  const badgeClass = ROLE_BADGE[user?.role] || "";
-
-  const handleLogout = () => { logout(); navigate("/"); };
 
   const isActive = (to) =>
-    to === "/patient" || to === "/doctor" || to === "/admin"
+    ["/patient", "/doctor", "/admin"].includes(to)
       ? location.pathname === to
       : location.pathname.startsWith(to);
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full" style={{ background: "linear-gradient(180deg, #0a0f1e 0%, #0d2233 60%, #0a1a2a 100%)" }}>
+  const handleLogout = () => { logout(); navigate("/"); };
 
-      {/* Logo */}
-      <div className="px-5 py-6 border-b border-white/10">
-        <Link to="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
-          <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shrink-0">
-            <Stethoscope className="w-5 h-5 text-white" />
-          </div>
-          <div className="leading-tight">
-            <div className="text-white font-black text-sm tracking-wide">{t("common.brand")}</div>
-            <div className="text-teal-400/70 text-[10px] font-semibold uppercase tracking-widest">{t("common.brandSub")}</div>
-          </div>
-        </Link>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-        <p className="text-[10px] font-black text-white/25 uppercase tracking-widest px-3 mb-3">{t("sidebar.mainMenu")}</p>
-        {items.map(({ icon: Icon, key, to }) => {
-          const active = isActive(to);
-          return (
-            <Link
-              key={to}
-              to={to}
-              onClick={() => setOpen(false)}
-              className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 relative
-                ${active
-                  ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
-                  : "text-white/50 hover:text-white hover:bg-white/8 border border-transparent"
-                }`}
-            >
-              {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-teal-400 rounded-full" />
-              )}
-              <Icon className={`w-4 h-4 shrink-0 ${active ? "text-teal-400" : "text-white/40 group-hover:text-white/70"}`} />
-              <span className="flex-1">{t(`sidebar.${key}`)}</span>
-              {active && <ChevronRight className="w-3.5 h-3.5 text-teal-400/60" />}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* User card + logout */}
-      <div className="px-3 py-4 border-t border-white/10 space-y-2">
-        <LanguageSwitcher variant="dark" className="w-full justify-center" />
-        <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-xl border border-white/10">
-          <div className="w-9 h-9 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center text-white font-black text-sm shrink-0">
-            {(user?.full_name || user?.email || "?")[0].toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-white font-bold text-xs truncate">{user?.full_name || t("common.user")}</div>
-            <span className={`inline-flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-md border mt-0.5 ${badgeClass}`}>
-              {user?.role === "admin" && <Shield className="w-2.5 h-2.5" />}
-              {user?.role && t(`common.roles.${user.role}`)}
-            </span>
-          </div>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-white/40 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all duration-150"
-        >
-          <LogOut className="w-4 h-4" />
-          {t("common.signOut")}
-        </button>
-      </div>
-    </div>
-  );
+  // One highlight that slides to the active item when the page changes
+  const navRef = useRef(null);
+  const [marker, setMarker] = useState(null);
+  useLayoutEffect(() => {
+    const el = navRef.current?.querySelector('[aria-current="page"]');
+    setMarker(el ? { top: el.offsetTop, height: el.offsetHeight } : null);
+  }, [location.pathname, items.length, t]);
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 shrink-0 h-screen sticky top-0">
-        <SidebarContent />
-      </aside>
+      {/* Mobile backdrop */}
+      {open && <div className="lg:hidden fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm" onClick={onClose} />}
 
-      {/* Mobile toggle button */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label={t("sidebar.openMenu")}
-        className="lg:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg border border-white/10"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      <aside
+        className={`flex flex-col px-3.5 pt-5 pb-4 min-h-0
+          max-lg:fixed max-lg:inset-y-3 max-lg:left-3 max-lg:z-50 max-lg:w-[250px] max-lg:rounded-card max-lg:bg-frame max-lg:shadow-elev2
+          max-lg:transition-transform max-lg:duration-300 ${open ? "max-lg:translate-x-0" : "max-lg:-translate-x-[110%]"}`}
+        aria-label={t("sidebar.mainMenu")}>
 
-      {/* Mobile overlay */}
-      {open && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="w-60 h-full flex flex-col">
-            <SidebarContent />
-          </div>
-          {/* Close overlay */}
-          <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)}>
-            <button aria-label={t("sidebar.closeMenu")} className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <div className="flex items-center justify-between px-2 pb-5">
+          <Link to="/" onClick={onClose}><Logo /></Link>
+          <button className="lg:hidden w-9 h-9 grid place-items-center rounded-xl text-muted hover:bg-panel2"
+            onClick={onClose} aria-label={t("sidebar.closeMenu")}>
+            <X className="w-4 h-4" />
+          </button>
         </div>
-      )}
+
+        <nav ref={navRef} className="relative flex-1 overflow-y-auto">
+          {marker && (
+            <span aria-hidden="true" className="absolute left-0 right-0 rounded-xl pointer-events-none"
+              style={{
+                top: marker.top, height: marker.height,
+                background: "linear-gradient(90deg, rgb(var(--accent) / 0.2), rgb(var(--accent) / 0.05))",
+                transition: "top .45s cubic-bezier(.16,1,.3,1), height .45s cubic-bezier(.16,1,.3,1)",
+              }}>
+              <span className="absolute left-[-2px] top-2.5 bottom-2.5 w-[3px] rounded bg-accent" style={{ boxShadow: "0 0 12px var(--glow)" }} />
+            </span>
+          )}
+          <p className="flex items-center gap-2.5 px-3 pt-1.5 pb-2 text-[12.5px] uppercase tracking-[0.22em] text-dim">
+            <span className="text-accent font-bold">+</span>{t("sidebar.mainMenu")}
+          </p>
+          {items.map(({ icon: Icon, key, to }) => {
+            const active = isActive(to);
+            return (
+              <Link key={to} to={to} onClick={onClose}
+                aria-current={active ? "page" : undefined}
+                className={`group relative flex items-center gap-3.5 my-0.5 px-3.5 py-3 rounded-xl text-[16px] transition-colors
+                  ${active ? "text-ink font-semibold" : "text-muted font-medium hover:text-ink"}`}>
+                <Icon className={`relative w-[18px] h-[18px] shrink-0 ${active ? "text-accent" : ""}`}
+                  style={active ? { filter: "drop-shadow(0 0 6px var(--glow))" } : undefined} />
+                <span className="relative transition-transform group-hover:translate-x-[3px]">{t(`sidebar.${key}`)}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="grid gap-2.5 mt-4">
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher className="flex-1 justify-center" />
+            <ThemeSwitcher />
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-panel border border-line">
+            <div className="w-9 h-9 rounded-xl grid place-items-center text-white font-bold text-[15px] shrink-0" style={{ background: "var(--hero)" }}>
+              {(user?.full_name || user?.email || "?")[0].toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[14.5px] font-semibold text-ink truncate">{user?.full_name || t("common.user")}</div>
+              <span className="chip chip-accent !px-2 !py-0.5 !text-[12px] mt-0.5">
+                {user?.role === "admin" && <Shield className="w-2.5 h-2.5" />}
+                {user?.role && t(`common.roles.${user.role}`)}
+              </span>
+            </div>
+          </div>
+          <button onClick={handleLogout}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold text-muted hover:text-bad hover:bg-bad/10 transition-colors">
+            <LogOut className="w-4 h-4" /> {t("common.signOut")}
+          </button>
+        </div>
+      </aside>
     </>
   );
 }

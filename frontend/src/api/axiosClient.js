@@ -22,4 +22,39 @@ axiosClient.interceptors.response.use(
   }
 );
 
+/**
+ * POST that reads a newline-delimited JSON stream (axios can't stream in the
+ * browser). Calls onEvent(event) for each line as it arrives.
+ */
+export async function streamPost(path, body, onEvent) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(axiosClient.defaults.baseURL + path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    return;
+  }
+  if (!res.ok || !res.body) throw new Error(`Request failed: ${res.status}`);
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const line of lines) if (line.trim()) onEvent(JSON.parse(line));
+    if (done) break;
+  }
+  if (buffer.trim()) onEvent(JSON.parse(buffer));
+}
+
 export default axiosClient;

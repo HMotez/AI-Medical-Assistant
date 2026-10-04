@@ -26,6 +26,7 @@ class SymptomExtractionOut(BaseModel):
     symptoms: list[str]
     negated: list[str]
     matches: list[SymptomMatch]
+    source: str = "rules"   # "ai" (Claude) or "rules" (offline parser)
 
 
 class PredictionOut(BaseModel):
