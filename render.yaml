@@ -15,6 +15,16 @@ services:
     dockerContext: .
     healthCheckPath: /api/health
     autoDeploy: true
+    buildFilter:                      # rebuild only when the API's own files change
+      paths:
+        - backend/**
+        - ml/**
+        - docker/Dockerfile.backend
+        - docker/entrypoint.sh
+        - frontend/src/i18n/medical-labels.json   # copied into the image for PDF reports
+      ignoredPaths:
+        - "**/*.md"
+        - backend/tests/**
     envVars:
       - key: ENVIRONMENT
         value: production
