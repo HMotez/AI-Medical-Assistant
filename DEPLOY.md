@@ -57,7 +57,7 @@ Service names are unique across Render. If a name was taken, Render adds a suffi
 
 ## Updating
 
-Every push to `main` redeploys both services automatically. Database changes are applied
+Every push to `main` redeploys both services automatically, as long as Render's GitHub app can see the repository (install it at <https://github.com/apps/render/installations/new> → *Only select repositories* → `AI-Medical-Assistant`). Without it, use *Manual Deploy* on each service. Database changes are applied
 at start-up (`alembic upgrade head`).
 
 ## Good to know
