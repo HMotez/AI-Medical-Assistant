@@ -11,10 +11,15 @@ const STATS = [
   { Icon: Award,    value: "95%",  key: "accuracy" },
 ];
 
+// The public deployment only has the shared demo patient; the demo doctor and
+// admin exist on a local installation (see backend/app/utils/create_admin.py).
+const LOCAL = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const DEMO = [
   ["patient", "patient@medai.com", "Patient@1234"],
-  ["doctor",  "doctor@medai.com",  "Doctor@1234"],
-  ["admin",   "admin@medai.com",   "Admin@1234"],
+  ...(LOCAL ? [
+    ["doctor", "doctor@medai.com", "Doctor@1234"],
+    ["admin",  "admin@medai.com",  "Admin@1234"],
+  ] : []),
 ];
 
 export default function Login() {
