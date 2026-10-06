@@ -17,6 +17,9 @@ reviewed by verified doctors.**
 ![Tests](https://img.shields.io/badge/backend%20tests-124%20passing-2ea44f)
 ![i18n](https://img.shields.io/badge/languages-EN%20%7C%20FR-8A2BE2)
 
+**[🌐 Live demo → medai-hmotez.onrender.com](https://medai-hmotez.onrender.com)** · try the demo patient: `patient@medai.com` / `Patient@1234`  
+<sub>Free hosting: the first visit after a quiet period can take about 50 seconds while the server wakes up.</sub>
+
 <img src=".github/screenshots/landing-dark.png" alt="Landing page with the 3D symptom constellation" width="100%" />
 
 </div>
