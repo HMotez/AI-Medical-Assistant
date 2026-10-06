@@ -4,8 +4,8 @@ export const PHOTOS = {
   /* Hero — doctor listening to patient, warm light, white coat */
   hero: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&w=1600&q=85",
 
-  /* Login sidebar — close-up stethoscope on heartbeat line */
-  login: "https://images.unsplash.com/photo-1530026405186-ed1f139313f3?auto=format&fit=crop&w=900&q=80",
+  /* Login sidebar — doctor holding a stethoscope */
+  login: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&w=1200&q=80",
 
   /* Register sidebar — modern hospital corridor, teal/blue tones */
   register: "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=900&q=80",
@@ -22,6 +22,12 @@ export const PHOTOS = {
   /* History — medical records, files, paperwork */
   history: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=1400&q=80",
 
+  /* Records — laptop and stethoscope on a desk */
+  records: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1400&q=80",
+
+  /* Trends — doctors reviewing a scan on screen */
+  trends: "https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=1400&q=80",
+
   /* Doctor dashboard — doctor reviewing patient on tablet */
   doctorDash: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=1400&q=80",
 
@@ -33,8 +39,8 @@ export const PHOTOS = {
 const ROUTE_PHOTOS = [
   ["/patient/analyze",  PHOTOS.symptomChecker],
   ["/patient/results",  PHOTOS.results],
-  ["/patient/history",  PHOTOS.history],
-  ["/patient/trends",   PHOTOS.history],
+  ["/patient/history",  PHOTOS.records],
+  ["/patient/trends",   PHOTOS.trends],
   ["/patient/chat",     PHOTOS.doctorDash],
   ["/patient",          PHOTOS.patientDash],
   ["/doctor/analysis",  PHOTOS.results],

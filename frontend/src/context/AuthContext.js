@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useCallback, useContext, useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 
 const AuthContext = createContext(null);
@@ -37,8 +37,15 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  /** Reload the signed-in user (after a profile, photo or verification change). */
+  const refreshUser = useCallback(async () => {
+    const { data } = await axiosClient.get("/api/users/me");
+    setUser(data);
+    return data;
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, setUser }}>
       {children}
     </AuthContext.Provider>
   );

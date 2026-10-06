@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
@@ -7,11 +7,17 @@ import UrgencyBadge from "../../components/UrgencyBadge";
 import useChartTip from "../../components/charts/useChartTip";
 import { useMedicalLabels } from "../../i18n/medical";
 import { dateLocale } from "../../i18n";
+import PageSkeleton from "../../components/ui/Skeleton";
 import {
-  TrendingUp, TrendingDown, Minus, Activity, Loader2, AlertTriangle, ChevronRight, Plus, Clock,
+  TrendingUp, TrendingDown, Minus, Activity, AlertTriangle, ChevronRight, Plus, Clock,
   CheckCircle, AlertCircle, Zap, HeartPulse
 } from "lucide-react";
 import StatTile from "../../components/ui/StatTile";
+
+// three.js is only downloaded when the 3D view is shown
+const HealthJourney3D = lazy(() => import("../../components/three/HealthJourney3D"));
+const VIEW_KEY = "trendsView";
+const savedView = () => { try { return localStorage.getItem(VIEW_KEY) === "2d" ? "2d" : "3d"; } catch { return "3d"; } };
 
 // Urgency colors (status palette) — every use also shows the icon and the word
 const URGENCY_COLOR = {
@@ -27,11 +33,20 @@ function TrendChart({ points }) {
   const { t } = useTranslation();
   const labels = useMedicalLabels();
   const { bind, node } = useChartTip();
-  const W = 640, H = 220, PAD = { top: 16, right: 18, bottom: 34, left: 44 };
+  const boxRef = useRef(null);
+  const [width, setWidth] = useState(640);
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const W = Math.max(width, 420), H = 300, PAD = { top: 18, right: 22, bottom: 38, left: 52 };
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
+  
   if (points.length < 2) return null;
-
   const x = (i) => PAD.left + (i / (points.length - 1)) * innerW;
   const y = (v) => PAD.top + innerH - v * innerH;
   const line = points.map((p, i) => `${i ? "L" : "M"} ${x(i).toFixed(1)} ${y(p.confidence).toFixed(1)}`).join(" ");
@@ -39,12 +54,12 @@ function TrendChart({ points }) {
   const fmtDate = (d) => new Date(d).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" });
 
   return (
-    <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[420px]" role="img" aria-label={t("trends.chartTitle")}>
+    <div ref={boxRef} className="overflow-x-auto">
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="block" role="img" aria-label={t("trends.chartTitle")}>
         {[0, 0.25, 0.5, 0.75, 1].map(v => (
           <g key={v}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} stroke="var(--chart-grid)" strokeWidth="1" />
-            <text x={PAD.left - 8} y={y(v) + 4} textAnchor="end" fontSize="10" fill="rgb(var(--dim))" fontFamily="var(--f-mono)">
+            <text x={PAD.left - 10} y={y(v) + 4} textAnchor="end" fontSize="12" fill="rgb(var(--dim))" fontFamily="var(--f-mono)">
               {Math.round(v * 100)}%
             </text>
           </g>
@@ -60,7 +75,7 @@ function TrendChart({ points }) {
                 {fmtDate(p.date)} · {Math.round(p.confidence * 100)}% · {t(`common.urgency.${p.urgency || "low"}`)}</>
             )} />
             {(i === 0 || i === points.length - 1 || points.length <= 8) && (
-              <text x={x(i)} y={H - 10} textAnchor="middle" fontSize="10" fill="rgb(var(--muted))">{fmtDate(p.date)}</text>
+              <text x={x(i)} y={H - 12} textAnchor="middle" fontSize="12.5" fill="rgb(var(--muted))">{fmtDate(p.date)}</text>
             )}
           </g>
         ))}
@@ -84,6 +99,8 @@ export default function HealthTrends() {
   const [points, setPoints]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState("");
+  const [view, setView]       = useState(savedView);
+  const chooseView = (v) => { setView(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* not remembered */ } };
 
   useEffect(() => {
     axiosClient.get("/api/analysis/trends?limit=15")
@@ -107,7 +124,7 @@ export default function HealthTrends() {
       />
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-7 h-7 text-accent animate-spin" /></div>
+        <PageSkeleton tiles={3} />
       ) : error ? (
         <div className="alert-error"><AlertTriangle className="w-4 h-4 shrink-0" /> {t(`trends.${error}`)}</div>
       ) : points.length === 0 ? (
@@ -128,11 +145,26 @@ export default function HealthTrends() {
 
           {points.length >= 2 && (
             <section className="card">
-              <div className="card-head">
+              <div className="card-head flex-wrap">
                 <div className="card-icon"><TrendingUp className="w-5 h-5" /></div>
-                <div><h2>{t("trends.chartTitle")}</h2><small>{t("trends.chartText")}</small></div>
+                <div className="flex-1 min-w-0"><h2>{t("trends.chartTitle")}</h2><small>{t("trends.chartText")}</small></div>
+                <div role="group" aria-label={t("trends.viewToggle")} className="inline-flex gap-1 p-1 rounded-[14px] bg-panel2">
+                  {["3d", "2d"].map(v => (
+                    <button key={v} type="button" onClick={() => chooseView(v)} aria-pressed={view === v}
+                      className={`px-3.5 py-1.5 rounded-[10px] text-[13.5px] font-bold transition-colors
+                        ${view === v ? "bg-accent text-white shadow-glow" : "text-muted hover:text-ink"}`}>
+                      {v.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <TrendChart points={points} />
+              {view === "3d" ? (
+                <Suspense fallback={<div className="skeleton h-[400px] !rounded-[22px]" />}>
+                  <HealthJourney3D points={points} />
+                </Suspense>
+              ) : (
+                <TrendChart points={points} />
+              )}
               <div className="flex flex-wrap gap-2 mt-3">
                 {Object.keys(URGENCY_COLOR).map(k => {
                   const Icon = URGENCY_ICON[k];

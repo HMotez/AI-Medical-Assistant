@@ -37,6 +37,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(users.files_router)
 app.include_router(analysis.router)
 app.include_router(reports.router)
 app.include_router(doctor.router)

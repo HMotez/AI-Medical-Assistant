@@ -113,8 +113,8 @@ export default function MedicalChat() {
   const basicMode = messages.some(m => m.role === "assistant" && m.model === "rule-based");
 
   return (
-    <div className="flex flex-col h-full min-h-[560px]">
-      <PageHead
+    <div className="flex flex-col gap-3 h-full min-h-[560px]">
+      <PageHead compact
         eyebrow={t("chat.assistant")}
         title={<span className="inline-flex items-center gap-2.5">{t("chat.title")} <span className="chip chip-accent"><Sparkles className="w-3 h-3" /> AI</span></span>}
         subtitle={t("chat.subtitle")}

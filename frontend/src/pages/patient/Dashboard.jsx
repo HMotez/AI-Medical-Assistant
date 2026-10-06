@@ -12,6 +12,7 @@ import {
   Activity, Plus, Clock, ChevronRight, FileText, User, MessageSquare, TrendingUp, Loader2, HeartPulse, CalendarDays
 } from "lucide-react";
 import StatTile from "../../components/ui/StatTile";
+import { firstName } from "../../utils/names";
 
 const SHORTCUTS = [
   { to: "/patient/history", Icon: Clock,         key: "history" },
@@ -42,7 +43,7 @@ export default function PatientDashboard() {
       <ConstellationStage photo={PHOTOS.patientDash}>
         <span className="pill pill-glass w-fit mb-4"><Activity className="w-3.5 h-3.5" /> {t("dashboard.portal")}</span>
         <h1 className="text-[clamp(1.9rem,3.4vw,2.6rem)] font-bold leading-[1.05]">
-          {t("dashboard.hello", { name: user?.full_name?.split(" ")[0] || "" })}
+          {t("dashboard.hello", { name: firstName(user?.full_name || "") })}
         </h1>
         <p className="text-white/85 text-[15.5px] mt-2 max-w-sm">{t("dashboard.overview")}</p>
         <div className="flex flex-wrap gap-2.5 mt-5">

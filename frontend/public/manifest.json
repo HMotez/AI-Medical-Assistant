@@ -3,8 +3,13 @@
   "name": "AI Medical Assistant — Symptom Analysis",
   "icons": [
     {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
       "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "sizes": "64x64",
       "type": "image/x-icon"
     },
     {
@@ -20,6 +25,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#14b8a6",
-  "background_color": "#0f172a"
+  "theme_color": "#2f7bf6",
+  "background_color": "#070c18"
 }

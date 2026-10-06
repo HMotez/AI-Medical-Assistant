@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * Animates the number inside a value ("41", "95%", "<3s", "+4.2%") from 0 up to
+ * Animates the number inside a value ("41", "95%", "1:3", "+4.2%") from 0 up to
  * its value when it first appears or changes. Non-numeric values show as-is.
  */
 export default function CountUp({ value, duration = 900 }) {
@@ -26,10 +26,13 @@ export default function CountUp({ value, duration = 900 }) {
       if (p < 1) frame.current = requestAnimationFrame(step);
     };
     frame.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame.current);
+    // Lands on the exact value even if animation frames are throttled
+    const settle = window.setTimeout(() => setShown(target), duration + 80);
+    return () => { cancelAnimationFrame(frame.current); window.clearTimeout(settle); };
   }, [target, duration]);
 
   if (!match) return text;
-  const number = shown.toFixed(decimals);
+  // shown is still null for one render when a value arrives after "—" (loading)
+  const number = (shown ?? 0).toFixed(decimals);
   return `${match[1]}${match[2].includes(",") ? number.replace(".", ",") : number}${match[3]}`;
 }

@@ -7,17 +7,14 @@ import PredictionBars from "../../components/charts/PredictionBars";
 import InfluenceBars from "../../components/charts/InfluenceBars";
 import { useMedicalLabels } from "../../i18n/medical";
 import { dateLocale } from "../../i18n";
+import { URGENCY_META } from "../../constants/urgency";
+import PageSkeleton from "../../components/ui/Skeleton";
 import {
   ChevronLeft, Activity, Stethoscope, MessageSquare, Brain, Send, CheckCircle,
-  AlertCircle, AlertTriangle, Zap, Loader2, TrendingUp
+  AlertCircle, AlertTriangle, Loader2, TrendingUp
 } from "lucide-react";
+import Select from "../../components/ui/Select";
 
-const URGENCY_META = {
-  low:       { Icon: CheckCircle,   gradient: "linear-gradient(125deg, #3fd09a 0%, #14a36b 100%)" },
-  moderate:  { Icon: AlertCircle,   gradient: "linear-gradient(125deg, #f6c453 0%, #c98a07 100%)" },
-  high:      { Icon: AlertTriangle, gradient: "linear-gradient(125deg, #f8a066 0%, #e0702e 100%)" },
-  emergency: { Icon: Zap,           gradient: "linear-gradient(125deg, #ff7a6e 0%, #e0453c 55%, #a8202a 100%)" },
-};
 
 export default function AnalysisDetail() {
   const { t } = useTranslation();
@@ -63,7 +60,7 @@ export default function AnalysisDetail() {
     } finally { setSending(false); }
   };
 
-  if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-8 h-8 text-accent animate-spin" /></div>;
+  if (loading) return <PageSkeleton tiles={0} />;
   if (!data) return (
     <div className="card text-center !py-14 max-w-md mx-auto mt-10">
       <div className="card-icon mx-auto !text-bad !bg-bad/10"><AlertCircle className="w-5 h-5" /></div>
@@ -92,7 +89,7 @@ export default function AnalysisDetail() {
       <PageHead
         back={
           <Link to="/doctor" aria-label={t("common.back")}
-            className="w-[42px] h-[42px] grid place-items-center rounded-full bg-panel border border-line text-ink hover:bg-raise shrink-0 mb-1">
+            className="glass-btn w-[42px] h-[42px] grid place-items-center rounded-full shrink-0 mb-1 transition-colors">
             <ChevronLeft className="w-[18px] h-[18px]" />
           </Link>
         }
@@ -212,10 +209,10 @@ export default function AnalysisDetail() {
           </div>
           <div>
             <label htmlFor="review-corrected" className="field-label">{t("doctor.detail.correctedLabel")}</label>
-            <select id="review-corrected" value={corrected} onChange={e => setCorrected(e.target.value)} className="input-field">
-              <option value="">{t("doctor.detail.noCorrection")}</option>
-              {sortedDiseases.map(d => <option key={d.name} value={d.name}>{labels.disease(d.name)}</option>)}
-            </select>
+            <Select id="review-corrected" value={corrected} onChange={setCorrected} icon={Activity}
+              placeholder={t("doctor.detail.noCorrection")}
+              options={[{ value: "", label: t("doctor.detail.noCorrection") },
+                ...sortedDiseases.map(d => ({ value: d.name, label: labels.disease(d.name), hint: labels.specialist(d.specialist) }))]} />
           </div>
           <label className="flex items-center gap-2.5 text-[15px] cursor-pointer">
             <input type="checkbox" checked={validated} onChange={e => setValidated(e.target.checked)} className="w-4 h-4 accent-[rgb(var(--accent))]" />

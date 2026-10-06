@@ -4,12 +4,15 @@ import { useAuth } from "../context/AuthContext";
 import ConstellationStage from "../components/three/ConstellationStage";
 import PageHead from "../components/ui/PageHead";
 import { PHOTOS } from "../constants/photos";
+import { URGENCY_TONE } from "../constants/urgency";
 import {
   Heart, Brain, Wind, Microscope, Stethoscope, Shield,
   Zap, FileText, Search, Activity, Phone, ArrowRight,
   CheckCircle, TrendingUp, Languages, Users, Award, Mail, MapPin, AlertTriangle, AlertCircle
 } from "lucide-react";
 import StatTile from "../components/ui/StatTile";
+import { PhotoCard } from "../components/ui/PhotoPanel";
+import { useMedicalLabels } from "../i18n/medical";
 
 const DEPARTMENTS = [
   { Icon: Heart,       key: "cardiology" },
@@ -50,10 +53,11 @@ function CardIcon({ Icon }) {
   return <div className="card-icon"><Icon className="w-5 h-5" /></div>;
 }
 
-function Section({ eyebrow, title, text, children }) {
+function Section({ eyebrow, title, text, photo, children }) {
   return (
-    <section className="mt-10">
-      <PageHead eyebrow={eyebrow} title={title} subtitle={text} />
+    <section className="mt-10 first:mt-0">
+      <PageHead eyebrow={eyebrow} title={title} subtitle={text} photo={photo} plain={!photo} />
+      {photo && <div className="h-4" />}
       {children}
     </section>
   );
@@ -99,34 +103,63 @@ function Stats() {
   );
 }
 
+const EXAMPLE_SYMPTOMS = ["high_fever", "cough", "fatigue", "headache"];
+
 function HowItWorks({ user }) {
   const { t } = useTranslation();
+  const labels = useMedicalLabels();
   return (
     <Section eyebrow={t("landing.services.tag")} title={t("landing.services.howTitle")} text={t("landing.services.howText")}>
-      <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {STEPS.map((key, i) => (
-          <li key={key} className="card">
-            <span className="font-data text-[13.5px] text-accent">0{i + 1}</span>
-            <h3 className="text-[17.5px] font-bold mt-2">{t(`landing.services.steps.${key}.title`)}</h3>
-            <p className="text-muted text-[14.5px] mt-1.5">{t(`landing.services.steps.${key}.desc`)}</p>
+      <div className="grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-3.5">
+        <PhotoCard photo={PHOTOS.symptomChecker} rings className="min-h-[340px] p-7">
+          <span className="pill pill-glass w-fit !py-1 !text-[12.5px]">{t("landing.example")}</span>
+          <div className="mt-auto">
+            <div className="flex flex-wrap gap-2 max-w-[22rem]">
+              {EXAMPLE_SYMPTOMS.map((code, i) => (
+                <span key={code} className="pill pill-glass !text-[14px] float-chip" style={{ animationDelay: `${i * 0.6}s` }}>
+                  <CheckCircle className="w-3.5 h-3.5" /> {labels.symptom(code)}
+                </span>
+              ))}
+            </div>
+            <h3 className="text-[24px] font-bold leading-tight mt-4 max-w-xs">{t("landing.stats.captions.symptoms")}</h3>
+          </div>
+        </PhotoCard>
+
+        <ol className="card grid gap-1 !p-3">
+          {STEPS.map((key, i) => (
+            <li key={key} className="flex gap-4 items-start rounded-[20px] p-3.5 hover:bg-panel2 transition-colors">
+              <span className="num-outline text-[44px] w-14 shrink-0">0{i + 1}</span>
+              <div className="min-w-0 pt-1">
+                <h3 className="text-[17.5px] font-bold">{t(`landing.services.steps.${key}.title`)}</h3>
+                <p className="text-muted text-[14.5px] mt-0.5">{t(`landing.services.steps.${key}.desc`)}</p>
+              </div>
+            </li>
+          ))}
+          <li className="p-3.5 pt-2">
+            <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary">
+              {t("landing.services.cta")} <ArrowRight className="w-4 h-4" />
+            </Link>
           </li>
-        ))}
-      </ol>
-      <div className="mt-5">
-        <Link to={user ? "/patient/analyze" : "/register"} className="btn-primary">
-          {t("landing.services.cta")} <ArrowRight className="w-4 h-4" />
-        </Link>
+        </ol>
       </div>
     </Section>
   );
 }
 
-function Features() {
+function Features({ photo }) {
   const { t } = useTranslation();
+  const small = FEATURES.filter(f => f.key !== "xai" && f.key !== "review");
   return (
-    <Section eyebrow={t("landing.services.tag")} title={t("landing.services.title")} text={t("landing.services.text")}>
+    <Section eyebrow={t("landing.services.tag")} title={t("landing.services.title")} text={t("landing.services.text")} photo={photo}>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {FEATURES.map(({ Icon, key }) => (
+        <PhotoCard photo={PHOTOS.results} rings className="sm:col-span-2 lg:col-span-1 lg:row-span-2 min-h-[300px] p-7">
+          <div className="w-12 h-12 rounded-2xl grid place-items-center bg-white/15 backdrop-blur"><Search className="w-6 h-6" /></div>
+          <div className="mt-auto">
+            <h3 className="text-[24px] font-bold leading-tight">{t("landing.services.features.xai.title")}</h3>
+            <p className="text-white/85 text-[15px] leading-relaxed mt-2 max-w-sm">{t("landing.services.features.xai.desc")}</p>
+          </div>
+        </PhotoCard>
+        {small.map(({ Icon, key }) => (
           <div key={key} className="card">
             <div className="card-head !mb-3">
               <CardIcon Icon={Icon} />
@@ -135,6 +168,16 @@ function Features() {
             <p className="text-muted text-[15px] leading-relaxed">{t(`landing.services.features.${key}.desc`)}</p>
           </div>
         ))}
+        <PhotoCard photo={PHOTOS.doctorDash} className="sm:col-span-2 lg:col-span-3 min-h-[180px] p-7" position="center 25%">
+          <div className="flex flex-wrap items-end gap-5 mt-auto">
+            <div className="w-12 h-12 rounded-2xl grid place-items-center bg-white/15 backdrop-blur"><Users className="w-6 h-6" /></div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[24px] font-bold leading-tight">{t("landing.services.features.review.title")}</h3>
+              <p className="text-white/85 text-[15px] leading-relaxed mt-1 max-w-lg">{t("landing.services.features.review.desc")}</p>
+            </div>
+            <Link to="/login" className="btn-primary btn-light"><Stethoscope className="w-4 h-4" /> {t("landing.hero.doctorPortal")}</Link>
+          </div>
+        </PhotoCard>
       </div>
     </Section>
   );
@@ -144,7 +187,7 @@ function Specialties({ user }) {
   const { t } = useTranslation();
   return (
     <>
-      <Section eyebrow={t("landing.specialties.tag")} title={t("landing.specialties.title")} text={t("landing.specialties.text")}>
+      <Section eyebrow={t("landing.specialties.tag")} title={t("landing.specialties.title")} text={t("landing.specialties.text")} photo={PHOTOS.doctorDash}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {DEPARTMENTS.map(({ Icon, key }) => (
             <div key={key} className="card !p-5 text-center">
@@ -159,7 +202,7 @@ function Specialties({ user }) {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {URGENCY.map(({ key, count, Icon, cls }) => (
             <StatTile key={key} label={t(`common.urgency.${key}`)} value={count} unit={t("landing.specialties.unit", { count })}
-              icon={Icon} tone={{ emergency: "bad", high: "serious", moderate: "warn", low: "good" }[key]} caption={t(`landing.specialties.urgency.${key}`)} />
+              icon={Icon} tone={URGENCY_TONE[key]} caption={t(`landing.specialties.urgency.${key}`)} />
           ))}
         </div>
         <div className="mt-5">
@@ -183,7 +226,7 @@ const POLICIES = ["privacy", "notReplacement", "accuracy", "reports"];
 function Contact() {
   const { t } = useTranslation();
   return (
-    <Section eyebrow={t("landing.contact.tag")} title={t("landing.contact.title")} text={t("landing.contact.text")}>
+    <Section eyebrow={t("landing.contact.tag")} title={t("landing.contact.title")} text={t("landing.contact.text")} photo={PHOTOS.login}>
       <div className="grid lg:grid-cols-2 gap-3.5">
         <div className="grid gap-3.5">
           {CONTACT_CARDS.map(({ Icon, key }) => (
@@ -243,7 +286,7 @@ export default function Landing() {
   const [searchParams] = useSearchParams();
   const view = searchParams.get("view");
 
-  if (view === "services")    return <><Features /><HowItWorks user={user} /></>;
+  if (view === "services")    return <><Features photo={PHOTOS.adminDash} /><HowItWorks user={user} /></>;
   if (view === "departments") return <Specialties user={user} />;
   if (view === "contact")     return <Contact />;
   return (

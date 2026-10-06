@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
 import PageHead from "../../components/ui/PageHead";
 import useChartTip from "../../components/charts/useChartTip";
+import CountUp from "../../components/ui/CountUp";
+import PageSkeleton from "../../components/ui/Skeleton";
 import {
-  Activity, Users, Stethoscope, FileText, TrendingUp, AlertTriangle, Zap, CheckCircle, AlertCircle, Loader2, HeartPulse
+  Activity, Users, Stethoscope, FileText, TrendingUp, AlertTriangle, Zap, CheckCircle, AlertCircle, HeartPulse
 } from "lucide-react";
 import StatTile from "../../components/ui/StatTile";
 
@@ -45,7 +47,7 @@ export default function AdminStats() {
     axiosClient.get("/api/admin/stats").then(r => setStats(r.data)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-8 h-8 text-accent animate-spin" /></div>;
+  if (loading) return <PageSkeleton />;
 
   // Urgency uses the status colors, always with icon + word
   const urgencyRows = [
@@ -117,8 +119,8 @@ export default function AdminStats() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           {health.map(({ key, value }) => (
             <div key={key} className="rounded-[20px] bg-panel2 p-4">
-              <div className="font-display text-[25.5px] font-extrabold tabular-nums">{value}</div>
-              <div className="text-[13.5px] text-muted">{t(`admin.stats.healthItems.${key}`)}</div>
+              <div className="text-[13.5px] font-medium text-muted leading-snug">{t(`admin.stats.healthItems.${key}`)}</div>
+              <div className="text-[26px] leading-none font-semibold tracking-[-0.03em] text-ink mt-2"><CountUp value={value} /></div>
             </div>
           ))}
         </div>

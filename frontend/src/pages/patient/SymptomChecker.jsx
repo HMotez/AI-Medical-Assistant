@@ -5,8 +5,9 @@ import axiosClient from "../../api/axiosClient";
 import PageHead from "../../components/ui/PageHead";
 import { useMedicalLabels, symptomLabel, searchable } from "../../i18n/medical";
 import {
-  Search, X, Activity, AlertCircle, Loader2, CheckCircle, Sparkles, MessageSquareText, SlidersHorizontal, ListChecks
+  Search, X, Activity, AlertCircle, Loader2, CheckCircle, Sparkles, MessageSquareText, SlidersHorizontal, ListChecks, Clock
 } from "lucide-react";
+import Select from "../../components/ui/Select";
 
 // Stored as codes so the analysis can be shown in any language
 const DURATIONS = ["lt_1d", "1_3d", "4_7d", "1_4w", "gt_1m"];
@@ -195,10 +196,9 @@ export default function SymptomChecker() {
             </div>
             <div>
               <label htmlFor="duration" className="field-label">{t("symptomChecker.duration")}</label>
-              <select id="duration" value={duration} onChange={e => setDuration(e.target.value)} className="input-field">
-                <option value="">{t("symptomChecker.selectPlaceholder")}</option>
-                {DURATIONS.map(d => <option key={d} value={d}>{t(`common.durations.${d}`)}</option>)}
-              </select>
+              <Select id="duration" value={duration} onChange={setDuration} icon={Clock}
+                placeholder={t("symptomChecker.selectPlaceholder")}
+                options={DURATIONS.map(d => ({ value: d, label: t(`common.durations.${d}`) }))} />
             </div>
 
             {error && <div className="alert-error" role="alert"><AlertCircle className="w-4 h-4 shrink-0" /> {error}</div>}

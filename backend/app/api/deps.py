@@ -30,6 +30,9 @@ def require_role(*roles: UserRole):
     def _guard(user: User = Depends(get_current_user)) -> User:
         if user.role not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        # A doctor account only gets doctor access once an administrator verified it
+        if user.role == UserRole.doctor and not user.is_verified_doctor:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Doctor account awaiting verification")
         return user
     return _guard
 

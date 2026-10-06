@@ -8,6 +8,13 @@ import reportWebVitals from './reportWebVitals';
 
 // Cards light up where the cursor is: set --mx / --my on the hovered card
 document.addEventListener('pointermove', (e) => {
+  // the frame's dot grid brightens around the cursor
+  const frame = document.querySelector('.app-frame');
+  if (frame) {
+    const f = frame.getBoundingClientRect();
+    frame.style.setProperty('--px', `${e.clientX - f.left}px`);
+    frame.style.setProperty('--py', `${e.clientY - f.top}px`);
+  }
   const card = e.target.closest?.('.card, .kpi');
   if (!card) return;
   const r = card.getBoundingClientRect();

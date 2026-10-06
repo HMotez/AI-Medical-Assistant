@@ -11,6 +11,9 @@ frontend/build/
 frontend/.env.local
 
 docker/postgres_data/
+docker/uploads/
+backend/uploads/
+backend/*.db
 ml/data/raw/
 ml/data/processed/
 

@@ -5,15 +5,30 @@
     <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#14b8a6" />
-    <meta name="description" content="AI-powered symptom analysis, specialist recommendations, and downloadable medical reports. Fast, private, and accurate." />
+    <meta name="theme-color" content="#070c18" />
+    <meta name="description" content="AI-powered symptom analysis in English and French: likely conditions, urgency, the right specialist and a downloadable medical report." />
     <meta name="application-name" content="AI Medical Assistant" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>AI Medical Assistant — Symptom Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <title>AI Medical Assistant</title>
+    <script>
+      // Set the saved theme and language before the CSS paints, so the page
+      // never flashes light before switching to dark (see src/theme.js).
+      (function () {
+        var theme = "dark", lang = "";
+        try { theme = localStorage.getItem("theme") || "dark"; lang = localStorage.getItem("lang") || ""; } catch (e) {}
+        var root = document.documentElement;
+        root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+        if (/^(en|fr)/.test(lang)) root.lang = lang.slice(0, 2);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta && theme === "light") meta.setAttribute("content", "#dfe7f3");
+      })();
+    </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>You need to enable JavaScript to run this app. / Activez JavaScript pour utiliser cette application.</noscript>
     <div id="root"></div>
   </body>
 </html>

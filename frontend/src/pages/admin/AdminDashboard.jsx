@@ -6,9 +6,10 @@ import { useAuth } from "../../context/AuthContext";
 import PageHead from "../../components/ui/PageHead";
 import {
   Users, Activity, Cpu, RefreshCw, CheckCircle, AlertCircle, Loader2, Trash2, Shield,
-  Search, Stethoscope, FileText, BarChart2, Microscope, ChevronRight, ChevronDown, UserCheck
+  Search, Stethoscope, FileText, BarChart2, Microscope, ChevronRight, ChevronDown, UserCheck, BadgeCheck
 } from "lucide-react";
 import StatTile from "../../components/ui/StatTile";
+import Avatar from "../../components/ui/Avatar";
 
 const ROLES = ["patient", "doctor", "admin"];
 
@@ -109,6 +110,14 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      {stats?.pending_doctors > 0 && (
+        <Link to="/admin/verifications" className="alert-warning !py-3 hover:brightness-105">
+          <BadgeCheck className="w-4 h-4 shrink-0" />
+          <span className="flex-1">{t("adminVerify.pendingCount", { count: stats.pending_doctors })}</span>
+          <span className="font-semibold">{t("adminVerify.review")} →</span>
+        </Link>
+      )}
+
       <div className="grid md:grid-cols-2 gap-4">
         {[
           { to: "/admin/stats",    Icon: BarChart2,  title: t("admin.dashboard.statsLink.title"),    sub: t("admin.dashboard.statsLink.sub") },
@@ -140,7 +149,7 @@ export default function AdminDashboard() {
           <div className="card-icon"><Users className="w-5 h-5" /></div>
           <div className="flex-1 min-w-0">
             <h2>{t("admin.dashboard.users")} <span className="chip ml-1">{users.length}</span></h2>
-            <small className="flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> {t("admin.dashboard.roleHint")}</small>
+            <small className="!flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> {t("admin.dashboard.roleHint")}</small>
           </div>
           <div className="flex items-center gap-2 rounded-[14px] bg-panel2 px-3.5 py-2.5 w-[min(300px,100%)]">
             <Search className="w-4 h-4 text-dim shrink-0" />
@@ -158,12 +167,15 @@ export default function AdminDashboard() {
           <div className="grid gap-2">
             {filtered.map(u => (
               <div key={u.id} className="flex items-center gap-3.5 rounded-[20px] border border-line bg-panel px-3 py-2.5">
-                <div className="w-10 h-10 rounded-xl grid place-items-center text-white text-[15px] font-bold shrink-0" style={{ background: "var(--hero)" }}>
-                  {(u.full_name || u.email || "?")[0].toUpperCase()}
-                </div>
+                <Avatar user={u} size={40} />
                 <div className="flex-1 min-w-0">
                   <div className="text-[15.5px] font-semibold truncate">{u.full_name || "—"}</div>
                   <div className="text-[13.5px] text-muted truncate">{u.email}</div>
+                  {u.role === "doctor" && u.doctor_status && u.doctor_status !== "approved" && (
+                    <span className={`chip mt-1 !text-[12px] ${u.doctor_status === "pending" ? "!bg-warn/15 !text-warn" : "!bg-bad/10 !text-bad"}`}>
+                      {t(`verification.status.${u.doctor_status}`)}
+                    </span>
+                  )}
                 </div>
                 <RoleDropdown userId={u.id} currentRole={u.role} onChanged={updateUserRole} isSelf={u.id === user?.id} />
                 <button onClick={() => deleteUser(u.id)} disabled={deleting === u.id || u.role === "admin"}

@@ -78,12 +78,15 @@
       "profile": "My Profile"
     },
     "doctor": {
-      "dashboard": "Dashboard"
+      "dashboard": "Dashboard",
+      "profile": "My Profile"
     },
     "admin": {
       "dashboard": "Dashboard",
       "stats": "Statistics",
-      "diseases": "Diseases"
+      "diseases": "Diseases",
+      "profile": "My Profile",
+      "verifications": "Verifications"
     }
   },
   "notFound": {
@@ -152,7 +155,24 @@
     },
     "terms": "By creating an account you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
     "hasAccount": "Already have an account?",
-    "loginLink": "Sign in"
+    "loginLink": "Sign in",
+    "as": "I am",
+    "asPatient": "Patient",
+    "asDoctor": "Doctor",
+    "doctorTitle": "Doctor sign-up",
+    "doctorSubtitle": "Your identity and diploma are checked before you get access to the doctor space.",
+    "doctorNotice": "An administrator verifies every doctor account (usually within 24–48 h). Until then you can sign in, but the doctor space stays locked.",
+    "phoneRequired": "Professional phone",
+    "idCard": "Identity card or passport",
+    "diploma": "Medical diploma",
+    "fileHint": "PDF, JPEG, PNG or WebP · max 5 MB",
+    "chooseFile": "Choose a file",
+    "replaceFile": "Replace",
+    "fileTooBig": "{{name}} is larger than 5 MB.",
+    "filesRequired": "Please add your identity card and your medical diploma.",
+    "attest": "I certify that I am a qualified doctor and that the information and documents provided are genuine. Any false declaration leads to the account being closed.",
+    "attestRequired": "Please confirm the certification.",
+    "submitDoctor": "Send my application"
   },
   "landing": {
     "hero": {
@@ -349,7 +369,8 @@
       },
       "disclaimerLabel": "Medical Disclaimer:",
       "disclaimer": "This platform is for informational purposes only. In case of emergency, call <strong>112</strong>."
-    }
+    },
+    "example": "Example"
   },
   "dashboard": {
     "portal": "Patient Portal",
@@ -418,7 +439,82 @@
     "deleteText": "Permanently delete your account and all associated data. This cannot be undone.",
     "deleteButton": "Delete Account",
     "confirmDelete": "Are you sure you want to permanently delete your account? This cannot be undone.",
-    "deleteError": "Failed to delete account. Please try again."
+    "deleteError": "Failed to delete account. Please try again.",
+    "memberSince": "Member since {{date}}",
+    "photo": {
+      "change": "Change photo",
+      "add": "Add a photo",
+      "remove": "Remove photo",
+      "hint": "JPEG, PNG or WebP · max 2 MB",
+      "error": "This photo could not be uploaded.",
+      "tooBig": "The photo is larger than 2 MB."
+    },
+    "completion": {
+      "title": "Profile completion",
+      "done": "Your profile is complete",
+      "missing": "Still missing: {{items}}"
+    },
+    "fields": {
+      "photo": "photo",
+      "phone": "phone",
+      "age": "age",
+      "gender": "gender",
+      "city": "city",
+      "bio": "about",
+      "blood_type": "blood type",
+      "height_cm": "height",
+      "weight_kg": "weight",
+      "emergency": "emergency contact",
+      "specialty": "specialty",
+      "license_number": "licence number",
+      "workplace": "workplace",
+      "years_experience": "experience"
+    },
+    "city": "City",
+    "cityPlaceholder": "e.g. Lyon",
+    "bio": "About",
+    "bioPlaceholderPatient": "Anything your doctor should know about you",
+    "bioPlaceholderDoctor": "Your practice, your approach, languages spoken…",
+    "medicalInfo": "Medical information",
+    "medicalHint": "Shared with doctors who review your analyses",
+    "bloodType": "Blood type",
+    "unknown": "Unknown",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "bmi": "BMI",
+    "bmiCategory": {
+      "under": "Underweight",
+      "normal": "Normal weight",
+      "over": "Overweight",
+      "obese": "Obesity"
+    },
+    "allergies": "Allergies",
+    "allergiesPlaceholder": "e.g. penicillin, peanuts",
+    "conditions": "Chronic conditions",
+    "conditionsPlaceholder": "e.g. asthma, diabetes",
+    "medications": "Current medications",
+    "medicationsPlaceholder": "Name and dose",
+    "emergency": "Emergency contact",
+    "emergencyName": "Contact name",
+    "emergencyPhone": "Contact phone",
+    "professional": "Professional information",
+    "professionalHint": "Shown to patients whose analyses you review",
+    "specialty": "Specialty",
+    "chooseSpecialty": "Choose a specialty",
+    "license": "Licence number (RPPS / medical council)",
+    "licenseLocked": "Verified — contact an administrator to change it",
+    "workplace": "Hospital or practice",
+    "workplacePlaceholder": "e.g. CHU de Lyon",
+    "years": "Years of experience",
+    "passwordTitle": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updatePassword": "Update password",
+    "passwordChanged": "Password updated.",
+    "passwordMismatch": "The two passwords do not match.",
+    "passwordTooShort": "At least 8 characters.",
+    "documents": "Verification documents"
   },
   "trends": {
     "yourHealth": "Your Health",
@@ -436,7 +532,9 @@
     "improved": "Improved",
     "worsened": "Worsened",
     "stable": "Stable",
-    "disclaimer": "⚠️ These trends are based on AI results and do not replace professional medical follow-up."
+    "disclaimer": "⚠️ These trends are based on AI results and do not replace professional medical follow-up.",
+    "hint3d": "Drag to turn · click a pillar to open the analysis",
+    "viewToggle": "Chart view"
   },
   "chat": {
     "assistant": "AI Assistant",
@@ -455,7 +553,7 @@
       "lifestyle": "What lifestyle changes can help?",
       "watch": "Which symptoms should I watch for?"
     },
-    "basicMode": "Basic mode active. Add ANTHROPIC_API_KEY to backend/.env for the full AI.",
+    "basicMode": "Basic mode active. Add an AI API key to backend/.env (see .env.example) for the full assistant.",
     "placeholder": "Describe your symptoms or ask a question… (Enter to send)",
     "send": "Send",
     "footer": "MedAI provides general information only — always consult a doctor."
@@ -707,5 +805,75 @@
       "loadError": "Could not load the medical database — is the AI model loaded on the server?",
       "footer": "These are the {{symptoms}} symptoms and {{diseases}} diseases the AI model was trained on."
     }
+  },
+  "pageTitles": {
+    "home": "Symptom analysis",
+    "login": "Sign in",
+    "register": "Create account",
+    "notFound": "Page not found",
+    "results": "Analysis results",
+    "analysis": "Patient analysis",
+    "adminDashboard": "Administration",
+    "stats": "Statistics",
+    "diseases": "Disease database",
+    "verifications": "Doctor verifications",
+    "verification": "Account verification",
+    "profile": "My profile"
+  },
+  "verification": {
+    "eyebrow": "Doctor space",
+    "title": "Account verification",
+    "pending": "Your application is being reviewed",
+    "pendingText": "An administrator is checking your identity card and medical diploma. You will get full access to the doctor space as soon as it is approved.",
+    "rejected": "Your application was not approved",
+    "rejectedText": "Read the reason below, then send corrected documents: your application goes back to review.",
+    "reason": "Reason",
+    "steps": {
+      "account": "Account created",
+      "documents": "Documents received",
+      "review": "Administrator review",
+      "access": "Doctor space unlocked"
+    },
+    "resend": "Send again",
+    "sent": "Document sent — your application is back in review.",
+    "view": "View",
+    "uploaded": "Sent {{date}}",
+    "kinds": {
+      "id_card": "Identity card",
+      "diploma": "Medical diploma"
+    },
+    "profileLink": "Complete my profile meanwhile",
+    "status": {
+      "pending": "Pending verification",
+      "approved": "Verified doctor",
+      "rejected": "Not approved"
+    }
+  },
+  "adminVerify": {
+    "eyebrow": "Administration",
+    "title": "Doctor verifications",
+    "subtitle": "Check each applicant's identity and diploma before giving doctor access",
+    "tabs": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "empty": "No application here.",
+    "submitted": "Applied {{date}}",
+    "reviewed": "Reviewed {{date}}",
+    "checklist": "Check that the name matches on both documents and that the licence number exists in the national health directory.",
+    "directory": "Open the health directory",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectReason": "Reason for the doctor (required)",
+    "confirmReject": "Confirm rejection",
+    "cancel": "Cancel",
+    "approved": "{{name}} can now use the doctor space.",
+    "rejectedDone": "{{name}} was informed of the reason.",
+    "pendingCount_one": "{{count}} doctor application waiting",
+    "pendingCount_other": "{{count}} doctor applications waiting",
+    "review": "Review",
+    "years_one": "{{count}} year",
+    "years_other": "{{count}} years"
   }
 }

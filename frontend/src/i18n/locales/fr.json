@@ -78,12 +78,15 @@
       "profile": "Mon profil"
     },
     "doctor": {
-      "dashboard": "Tableau de bord"
+      "dashboard": "Tableau de bord",
+      "profile": "Mon profil"
     },
     "admin": {
       "dashboard": "Tableau de bord",
       "stats": "Statistiques",
-      "diseases": "Maladies"
+      "diseases": "Maladies",
+      "profile": "Mon profil",
+      "verifications": "Vérifications"
     }
   },
   "notFound": {
@@ -152,7 +155,24 @@
     },
     "terms": "En créant un compte, vous acceptez nos <terms>Conditions d'utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>",
     "hasAccount": "Vous avez déjà un compte ?",
-    "loginLink": "Se connecter"
+    "loginLink": "Se connecter",
+    "as": "Je suis",
+    "asPatient": "Patient",
+    "asDoctor": "Médecin",
+    "doctorTitle": "Inscription médecin",
+    "doctorSubtitle": "Votre identité et votre diplôme sont vérifiés avant l'accès à l'espace médecin.",
+    "doctorNotice": "Un administrateur vérifie chaque compte médecin (généralement sous 24 à 48 h). En attendant, vous pouvez vous connecter mais l'espace médecin reste verrouillé.",
+    "phoneRequired": "Téléphone professionnel",
+    "idCard": "Carte d'identité ou passeport",
+    "diploma": "Diplôme de médecine",
+    "fileHint": "PDF, JPEG, PNG ou WebP · 5 Mo max",
+    "chooseFile": "Choisir un fichier",
+    "replaceFile": "Remplacer",
+    "fileTooBig": "{{name}} dépasse 5 Mo.",
+    "filesRequired": "Ajoutez votre carte d'identité et votre diplôme de médecine.",
+    "attest": "Je certifie être médecin diplômé et que les informations et documents fournis sont authentiques. Toute fausse déclaration entraîne la fermeture du compte.",
+    "attestRequired": "Veuillez confirmer la certification.",
+    "submitDoctor": "Envoyer ma demande"
   },
   "landing": {
     "hero": {
@@ -349,7 +369,8 @@
       },
       "disclaimerLabel": "Avertissement médical :",
       "disclaimer": "Cette plateforme est fournie à titre informatif uniquement. En cas d'urgence, appelez le <strong>112</strong>."
-    }
+    },
+    "example": "Exemple"
   },
   "dashboard": {
     "portal": "Espace patient",
@@ -418,7 +439,82 @@
     "deleteText": "Supprime définitivement votre compte et toutes les données associées. Action irréversible.",
     "deleteButton": "Supprimer le compte",
     "confirmDelete": "Voulez-vous vraiment supprimer définitivement votre compte ? Cette action est irréversible.",
-    "deleteError": "Impossible de supprimer le compte. Veuillez réessayer."
+    "deleteError": "Impossible de supprimer le compte. Veuillez réessayer.",
+    "memberSince": "Membre depuis {{date}}",
+    "photo": {
+      "change": "Changer la photo",
+      "add": "Ajouter une photo",
+      "remove": "Supprimer la photo",
+      "hint": "JPEG, PNG ou WebP · 2 Mo max",
+      "error": "Impossible d'envoyer cette photo.",
+      "tooBig": "La photo dépasse 2 Mo."
+    },
+    "completion": {
+      "title": "Profil complété",
+      "done": "Votre profil est complet",
+      "missing": "Il manque : {{items}}"
+    },
+    "fields": {
+      "photo": "photo",
+      "phone": "téléphone",
+      "age": "âge",
+      "gender": "sexe",
+      "city": "ville",
+      "bio": "à propos",
+      "blood_type": "groupe sanguin",
+      "height_cm": "taille",
+      "weight_kg": "poids",
+      "emergency": "contact d'urgence",
+      "specialty": "spécialité",
+      "license_number": "n° RPPS",
+      "workplace": "lieu d'exercice",
+      "years_experience": "expérience"
+    },
+    "city": "Ville",
+    "cityPlaceholder": "ex. Lyon",
+    "bio": "À propos",
+    "bioPlaceholderPatient": "Ce que votre médecin devrait savoir sur vous",
+    "bioPlaceholderDoctor": "Votre pratique, votre approche, les langues parlées…",
+    "medicalInfo": "Informations médicales",
+    "medicalHint": "Partagées avec les médecins qui examinent vos analyses",
+    "bloodType": "Groupe sanguin",
+    "unknown": "Inconnu",
+    "height": "Taille (cm)",
+    "weight": "Poids (kg)",
+    "bmi": "IMC",
+    "bmiCategory": {
+      "under": "Insuffisance pondérale",
+      "normal": "Poids normal",
+      "over": "Surpoids",
+      "obese": "Obésité"
+    },
+    "allergies": "Allergies",
+    "allergiesPlaceholder": "ex. pénicilline, arachides",
+    "conditions": "Maladies chroniques",
+    "conditionsPlaceholder": "ex. asthme, diabète",
+    "medications": "Traitements en cours",
+    "medicationsPlaceholder": "Nom et dosage",
+    "emergency": "Contact d'urgence",
+    "emergencyName": "Nom du contact",
+    "emergencyPhone": "Téléphone du contact",
+    "professional": "Informations professionnelles",
+    "professionalHint": "Visibles par les patients dont vous examinez les analyses",
+    "specialty": "Spécialité",
+    "chooseSpecialty": "Choisir une spécialité",
+    "license": "N° RPPS / Ordre des médecins",
+    "licenseLocked": "Vérifié — contactez un administrateur pour le modifier",
+    "workplace": "Hôpital ou cabinet",
+    "workplacePlaceholder": "ex. CHU de Lyon",
+    "years": "Années d'expérience",
+    "passwordTitle": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "updatePassword": "Mettre à jour",
+    "passwordChanged": "Mot de passe mis à jour.",
+    "passwordMismatch": "Les deux mots de passe ne correspondent pas.",
+    "passwordTooShort": "Au moins 8 caractères.",
+    "documents": "Documents de vérification"
   },
   "trends": {
     "yourHealth": "Votre santé",
@@ -436,7 +532,9 @@
     "improved": "Amélioration",
     "worsened": "Aggravation",
     "stable": "Stable",
-    "disclaimer": "⚠️ Ces tendances sont basées sur les résultats de l'IA et ne remplacent pas un suivi médical professionnel."
+    "disclaimer": "⚠️ Ces tendances sont basées sur les résultats de l'IA et ne remplacent pas un suivi médical professionnel.",
+    "hint3d": "Faites glisser pour pivoter · cliquez sur une colonne pour ouvrir l'analyse",
+    "viewToggle": "Vue du graphique"
   },
   "chat": {
     "assistant": "Assistant IA",
@@ -455,7 +553,7 @@
       "lifestyle": "Quels changements d'hygiène de vie peuvent aider ?",
       "watch": "Quels sont les symptômes à surveiller ?"
     },
-    "basicMode": "Mode basique actif. Ajoutez ANTHROPIC_API_KEY dans backend/.env pour l'IA complète.",
+    "basicMode": "Mode basique actif. Ajoutez une clé d'API IA dans backend/.env (voir .env.example) pour l'assistant complet.",
     "placeholder": "Décrivez vos symptômes ou posez une question… (Entrée pour envoyer)",
     "send": "Envoyer",
     "footer": "MedAI fournit des informations générales uniquement — consultez toujours un médecin."
@@ -707,5 +805,75 @@
       "loadError": "Impossible de charger la base médicale — le modèle d'IA est-il chargé sur le serveur ?",
       "footer": "Ce sont les {{symptoms}} symptômes et {{diseases}} maladies sur lesquels le modèle d'IA a été entraîné."
     }
+  },
+  "pageTitles": {
+    "home": "Analyse des symptômes",
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "notFound": "Page introuvable",
+    "results": "Résultats de l'analyse",
+    "analysis": "Analyse du patient",
+    "adminDashboard": "Administration",
+    "stats": "Statistiques",
+    "diseases": "Base des maladies",
+    "verifications": "Vérification des médecins",
+    "verification": "Vérification du compte",
+    "profile": "Mon profil"
+  },
+  "verification": {
+    "eyebrow": "Espace médecin",
+    "title": "Vérification du compte",
+    "pending": "Votre demande est en cours d'examen",
+    "pendingText": "Un administrateur vérifie votre pièce d'identité et votre diplôme de médecine. Vous aurez accès à l'espace médecin dès l'approbation.",
+    "rejected": "Votre demande n'a pas été approuvée",
+    "rejectedText": "Lisez le motif ci-dessous puis renvoyez des documents corrigés : votre demande repart en examen.",
+    "reason": "Motif",
+    "steps": {
+      "account": "Compte créé",
+      "documents": "Documents reçus",
+      "review": "Examen par un administrateur",
+      "access": "Espace médecin débloqué"
+    },
+    "resend": "Renvoyer",
+    "sent": "Document envoyé — votre demande repart en examen.",
+    "view": "Voir",
+    "uploaded": "Envoyé le {{date}}",
+    "kinds": {
+      "id_card": "Pièce d'identité",
+      "diploma": "Diplôme de médecine"
+    },
+    "profileLink": "Compléter mon profil en attendant",
+    "status": {
+      "pending": "Vérification en attente",
+      "approved": "Médecin vérifié",
+      "rejected": "Non approuvé"
+    }
+  },
+  "adminVerify": {
+    "eyebrow": "Administration",
+    "title": "Vérification des médecins",
+    "subtitle": "Contrôlez l'identité et le diplôme de chaque candidat avant de donner l'accès médecin",
+    "tabs": {
+      "pending": "En attente",
+      "approved": "Approuvés",
+      "rejected": "Refusés"
+    },
+    "empty": "Aucune demande ici.",
+    "submitted": "Demande du {{date}}",
+    "reviewed": "Examinée le {{date}}",
+    "checklist": "Vérifiez que le nom est identique sur les deux documents et que le n° RPPS existe dans l'annuaire santé.",
+    "directory": "Ouvrir l'annuaire santé",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "rejectReason": "Motif pour le médecin (obligatoire)",
+    "confirmReject": "Confirmer le refus",
+    "cancel": "Annuler",
+    "approved": "{{name}} a maintenant accès à l'espace médecin.",
+    "rejectedDone": "{{name}} a été informé du motif.",
+    "pendingCount_one": "{{count}} demande médecin en attente",
+    "pendingCount_other": "{{count}} demandes médecin en attente",
+    "review": "Examiner",
+    "years_one": "{{count}} an",
+    "years_other": "{{count}} ans"
   }
 }

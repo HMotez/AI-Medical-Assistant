@@ -1,8 +1,12 @@
+from typing import List, Optional
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from app.api.deps import require_admin
-from app.models.user import User, UserRole
-from app.schemas.user import UserOut
+from app.core.database import get_db
+from app.models.user import User, UserRole, DoctorStatus
+from app.schemas.user import UserOut, DoctorRequestOut, DoctorRejection
+from app.services import user_service
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -37,9 +41,12 @@ def get_stats(_: User = Depends(require_admin)):
     db = SessionLocal()
     try:
         total_patients  = db.query(UserModel).filter(UserModel.role == UserRole.patient).count()
-        total_doctors   = db.query(UserModel).filter(UserModel.role == UserRole.doctor).count()
+        total_doctors   = db.query(UserModel).filter(UserModel.role == UserRole.doctor,
+                                                 UserModel.doctor_status == DoctorStatus.approved.value).count()
+        pending_doctors = db.query(UserModel).filter(UserModel.role == UserRole.doctor,
+                                                 UserModel.doctor_status == DoctorStatus.pending.value).count()
         total_admins    = db.query(UserModel).filter(UserModel.role == UserRole.admin).count()
-        total_users     = total_patients + total_doctors + total_admins
+        total_users     = db.query(UserModel).count()
         total_analyses  = db.query(Analysis).count()
         total_reports   = db.query(Report).count()
 
@@ -47,6 +54,7 @@ def get_stats(_: User = Depends(require_admin)):
             "total_users":        total_users,
             "total_patients":     total_patients,
             "total_doctors":      total_doctors,
+            "pending_doctors":    pending_doctors,
             "total_admins":       total_admins,
             "total_analyses":     total_analyses,
             "total_reports":      total_reports,
@@ -68,19 +76,52 @@ def change_user_role(
     user_id: int,
     body: RoleUpdate,
     admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
-    """Promote or demote a user's role (admin only). Cannot change your own role."""
-    from app.core.database import SessionLocal
-    db = SessionLocal()
-    try:
-        if user_id == admin.id:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change your own role")
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        user.role = body.role
-        db.commit()
-        db.refresh(user)
-        return user
-    finally:
-        db.close()
+    """Promote or demote a user's role (admin only). Cannot change your own role.
+    Making someone a doctor here is the administrator vouching for them: the
+    account is verified directly. Leaving the doctor role clears the verification."""
+    if user_id == admin.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change your own role")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if body.role == UserRole.doctor and user.role != UserRole.doctor:
+        user.doctor_status = DoctorStatus.approved.value
+    elif body.role != UserRole.doctor:
+        user.doctor_status = None
+    user.role = body.role
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+# ── Doctor verification ───────────────────────────────────────────────────────
+@router.get("/doctor-requests", response_model=List[DoctorRequestOut])
+def doctor_requests(
+    status_filter: Optional[DoctorStatus] = DoctorStatus.pending,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Doctor accounts with their documents; pending ones by default (oldest first)."""
+    query = db.query(User).filter(User.role == UserRole.doctor)
+    if status_filter:
+        query = query.filter(User.doctor_status == status_filter.value)
+    return query.order_by(User.created_at.asc()).all()
+
+
+def _doctor_or_404(db: Session, user_id: int) -> User:
+    user = db.query(User).filter(User.id == user_id, User.role == UserRole.doctor).first()
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found")
+    return user
+
+
+@router.post("/doctors/{user_id}/approve", response_model=UserOut)
+def approve_doctor(user_id: int, _: User = Depends(require_admin), db: Session = Depends(get_db)):
+    return user_service.review_doctor(db, _doctor_or_404(db, user_id), approve=True)
+
+
+@router.post("/doctors/{user_id}/reject", response_model=UserOut)
+def reject_doctor(user_id: int, body: DoctorRejection, _: User = Depends(require_admin), db: Session = Depends(get_db)):
+    return user_service.review_doctor(db, _doctor_or_404(db, user_id), approve=False, reason=body.reason)

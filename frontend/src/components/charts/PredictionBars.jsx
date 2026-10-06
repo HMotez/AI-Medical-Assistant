@@ -33,8 +33,9 @@ export default function PredictionBars({ predictions }) {
                   style={{ background: "linear-gradient(90deg, var(--chart-grid) 1px, transparent 1px) 0 0 / 25% 100%", borderRight: "1px solid var(--chart-grid)" }} />
                 <div className="absolute inset-y-0 left-0 rounded-r"
                   style={{ width, background: "var(--chart-series)" }} />
-                <span className="font-data absolute top-1/2 -translate-y-1/2 text-[13.5px] text-ink whitespace-nowrap"
-                  style={{ left: `calc(${width} + 8px)` }}>
+                {/* a long bar carries its value inside, so the label never leaves the card */}
+                <span className={`font-data absolute top-1/2 -translate-y-1/2 text-[13.5px] whitespace-nowrap ${value > 0.82 ? "text-white" : "text-ink"}`}
+                  style={value > 0.82 ? { right: `calc(100% - ${width} + 8px)` } : { left: `calc(${width} + 8px)` }}>
                   {fmt(value)}
                 </span>
                 <div className="absolute -inset-y-1.5 inset-x-0" {...bind(

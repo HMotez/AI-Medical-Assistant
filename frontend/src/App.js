@@ -1,7 +1,8 @@
 import { useRef } from "react";
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DocumentTitle from "./components/DocumentTitle";
 import Navbar   from "./components/layout/Navbar";
 import AppFrame from "./components/layout/AppFrame";
 import PhotoBackdrop from "./components/layout/PhotoBackdrop";
@@ -12,30 +13,37 @@ import Landing   from "./pages/Landing";
 import Login     from "./pages/auth/Login";
 import Register  from "./pages/auth/Register";
 import NotFound  from "./pages/NotFound";
+import Profile   from "./pages/Profile";
 
 /* Patient */
 import PatientDashboard from "./pages/patient/Dashboard";
 import SymptomChecker   from "./pages/patient/SymptomChecker";
 import Results          from "./pages/patient/Results";
 import History          from "./pages/patient/History";
-import Profile          from "./pages/patient/Profile";
 import MedicalChat      from "./pages/patient/MedicalChat";
 import HealthTrends     from "./pages/patient/HealthTrends";
 
 /* Doctor */
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import AnalysisDetail  from "./pages/doctor/AnalysisDetail";
+import Verification    from "./pages/doctor/Verification";
 
 /* Admin */
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminStats     from "./pages/admin/AdminStats";
 import AdminDiseases  from "./pages/admin/AdminDiseases";
+import AdminVerifications from "./pages/admin/AdminVerifications";
 
 function PatientRoute({ children }) {
   return <ProtectedRoute roles={["patient"]}>{children}</ProtectedRoute>;
 }
+/** Doctor pages need a verified account; until then the doctor sees their verification status. */
+function DoctorGate({ children }) {
+  const { user } = useAuth();
+  return user?.doctor_status === "approved" ? children : <Verification />;
+}
 function DoctorRoute({ children }) {
-  return <ProtectedRoute roles={["doctor"]}>{children}</ProtectedRoute>;
+  return <ProtectedRoute roles={["doctor"]}><DoctorGate>{children}</DoctorGate></ProtectedRoute>;
 }
 function AdminRoute({ children }) {
   return <ProtectedRoute roles={["admin"]}>{children}</ProtectedRoute>;
@@ -47,9 +55,9 @@ function PublicLayout() {
   const pageRef = useRef(null);
   useRiseIn(pageRef, pathname + search);
   return (
-    <div className="relative min-h-screen p-0 sm:p-4 lg:p-7">
+    <div className="relative min-h-screen">
       <PhotoBackdrop />
-      <div className="app-frame min-h-[calc(100vh-3.5rem)] p-3 sm:p-4 lg:p-5 max-sm:rounded-none">
+      <div className="app-frame min-h-screen p-3 sm:p-4 lg:p-5">
         <Navbar />
         <div key={pathname + search} ref={pageRef} className="page-enter pt-3">
           <Outlet />
@@ -63,6 +71,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <DocumentTitle />
         <Routes>
 
           {/* ── Landing ──────────────────────────────────────────── */}
@@ -86,10 +95,13 @@ export default function App() {
 
             <Route path="/doctor"              element={<DoctorRoute><DoctorDashboard /></DoctorRoute>} />
             <Route path="/doctor/analysis/:id" element={<DoctorRoute><AnalysisDetail /></DoctorRoute>} />
+            <Route path="/doctor/profile"      element={<ProtectedRoute roles={["doctor"]}><Profile /></ProtectedRoute>} />
 
             <Route path="/admin"          element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/stats"    element={<AdminRoute><AdminStats /></AdminRoute>} />
             <Route path="/admin/diseases" element={<AdminRoute><AdminDiseases /></AdminRoute>} />
+            <Route path="/admin/verifications" element={<AdminRoute><AdminVerifications /></AdminRoute>} />
+            <Route path="/admin/profile"  element={<AdminRoute><Profile /></AdminRoute>} />
           </Route>
 
           {/* ── 404 ──────────────────────────────────────────────── */}

@@ -16,9 +16,9 @@ export default function NotFound() {
     user?.role === "doctor" ? "/doctor" : user ? "/patient" : "/";
 
   return (
-    <div className="relative min-h-screen p-0 sm:p-4">
+    <div className="relative min-h-screen">
       <PhotoBackdrop />
-      <div className="app-frame min-h-[calc(100vh-2rem)] p-5 flex flex-col max-sm:rounded-none">
+      <div className="app-frame min-h-screen p-5 flex flex-col">
         <div className="flex items-center justify-between">
           <Link to="/"><Logo /></Link>
           <div className="flex items-center gap-2"><LanguageSwitcher /><ThemeSwitcher /></div>

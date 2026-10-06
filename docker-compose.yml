@@ -37,6 +37,8 @@ services:
         condition: service_healthy
     volumes:
       - ./ml/models/saved:/app/ml/models/saved
+      # profile photos + doctor verification documents survive rebuilds
+      - ./docker/uploads:/app/uploads
 
   frontend:
     build:

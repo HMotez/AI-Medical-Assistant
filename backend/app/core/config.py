@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
 
+    # Uploads (profile photos, doctor verification documents) — kept out of the web root
+    UPLOAD_DIR: str = "uploads"
+    AVATAR_MAX_BYTES: int = 2 * 1024 * 1024
+    DOCUMENT_MAX_BYTES: int = 5 * 1024 * 1024
+
     # ML
     ML_MODEL_PATH: str = "ml/models/saved/model.joblib"
 

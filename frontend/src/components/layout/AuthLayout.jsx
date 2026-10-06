@@ -15,9 +15,9 @@ export default function AuthLayout({ aside, footer, children }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   return (
-    <div className="relative min-h-screen p-0 sm:p-4 lg:p-7">
+    <div className="relative min-h-screen">
       <PhotoBackdrop />
-      <div className="app-frame min-h-[calc(100vh-3.5rem)] p-3 sm:p-4 lg:p-5 grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-4 max-sm:rounded-none">
+      <div className="app-frame min-h-screen p-3 sm:p-4 lg:p-5 grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-4">
         <div className="hidden lg:flex flex-col gap-4 min-w-0">
           <Link to="/" className="w-fit px-1 pt-1"><Logo /></Link>
           <ConstellationStage className="flex-1 !grid-cols-1 !grid-rows-[auto_minmax(280px,1fr)]" caption photo={photoForPath(pathname)}>

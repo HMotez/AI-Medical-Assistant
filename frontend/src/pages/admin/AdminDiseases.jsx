@@ -4,8 +4,10 @@ import axiosClient from "../../api/axiosClient";
 import PageHead from "../../components/ui/PageHead";
 import UrgencyBadge from "../../components/UrgencyBadge";
 import { useMedicalLabels, searchable } from "../../i18n/medical";
+import { URGENCY_TONE } from "../../constants/urgency";
+import PageSkeleton from "../../components/ui/Skeleton";
 import {
-  Microscope, Search, Activity, Shield, ChevronDown, ChevronUp, AlertCircle, Loader2, ArrowUpDown,
+  Microscope, Search, Activity, Shield, ChevronDown, ChevronUp, AlertCircle, ArrowUpDown,
   Zap, AlertTriangle, CheckCircle
 } from "lucide-react";
 import StatTile from "../../components/ui/StatTile";
@@ -58,7 +60,7 @@ export default function AdminDiseases() {
       />
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 text-accent animate-spin" /></div>
+        <PageSkeleton cards={1} rows={8} />
       ) : loadError ? (
         <div className="alert-error"><AlertCircle className="w-4 h-4 shrink-0" /> {t("admin.diseases.loadError")}</div>
       ) : (
@@ -66,7 +68,7 @@ export default function AdminDiseases() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-3.5">
             {["emergency", "high", "moderate", "low"].map(key => (
               <StatTile key={key} label={t(`common.urgency.${key}`)} value={urgencyCount(key)}
-                unit={t("landing.specialties.unit", { count: urgencyCount(key) })} icon={URGENCY_ICON[key]} tone={{ emergency: "bad", high: "serious", moderate: "warn", low: "good" }[key]} />
+                unit={t("landing.specialties.unit", { count: urgencyCount(key) })} icon={URGENCY_ICON[key]} tone={URGENCY_TONE[key]} />
             ))}
           </div>
 

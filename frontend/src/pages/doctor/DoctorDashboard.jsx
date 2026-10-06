@@ -10,6 +10,7 @@ import { dateLocale } from "../../i18n";
 import { PHOTOS } from "../../constants/photos";
 import { Stethoscope, Users, Activity, ChevronRight, AlertTriangle, Zap, Search, Loader2, MessageSquare } from "lucide-react";
 import StatTile from "../../components/ui/StatTile";
+import { withoutTitle } from "../../utils/names";
 
 // Emergencies first, then high, then the rest — so what needs a doctor is at the top
 const URGENCY_RANK = { emergency: 0, high: 1, moderate: 2, low: 3 };
@@ -43,7 +44,7 @@ export default function DoctorDashboard() {
     <div className="grid gap-4">
       <ConstellationStage caption={false} photo={PHOTOS.doctorDash}>
         <span className="pill pill-glass w-fit mb-4"><Stethoscope className="w-3.5 h-3.5" /> {t("doctor.portal")}</span>
-        <h1 className="text-[clamp(1.9rem,3.4vw,2.6rem)] font-bold leading-[1.05]">{t("doctor.title", { name: user?.full_name || "" })}</h1>
+        <h1 className="text-[clamp(1.9rem,3.4vw,2.6rem)] font-bold leading-[1.05]">{t("doctor.title", { name: withoutTitle(user?.full_name || "") })}</h1>
         <p className="text-white/85 text-[15.5px] mt-2">{t("doctor.subtitle")}</p>
       </ConstellationStage>
 

@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from app.core.database import SessionLocal
 from app.core.security import hash_password
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, DoctorStatus
 
 
 def create_admin(
@@ -67,8 +67,10 @@ def create_doctor(
                 print(f"[INFO] Doctor already exists: {email}")
             else:
                 existing.role = UserRole.doctor
-                db.commit()
                 print(f"[OK] Promoted existing user to doctor: {email}")
+            # The demo doctor is set up by the admin: verified directly
+            existing.doctor_status = DoctorStatus.approved.value
+            db.commit()
             return
 
         doctor = User(
@@ -76,6 +78,11 @@ def create_doctor(
             hashed_password=hash_password(password),
             full_name=full_name,
             role=UserRole.doctor,
+            doctor_status=DoctorStatus.approved.value,
+            specialty="Médecin généraliste",
+            license_number="10001234567",
+            workplace="Demo Medical Center",
+            years_experience=8,
             is_active=True,
         )
         db.add(doctor)

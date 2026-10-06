@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import axiosClient from "../../api/axiosClient";
+import Avatar from "../ui/Avatar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
@@ -7,7 +9,7 @@ import ThemeSwitcher from "../ThemeSwitcher";
 import Logo from "../ui/Logo";
 import {
   LayoutDashboard, Activity, ClipboardList, User, LogOut, BarChart2,
-  Microscope, Shield, MessageSquare, TrendingUp, X
+  Microscope, Shield, MessageSquare, TrendingUp, X, BadgeCheck
 } from "lucide-react";
 
 const NAV = {
@@ -21,11 +23,14 @@ const NAV = {
   ],
   doctor: [
     { icon: LayoutDashboard, key: "doctor.dashboard",       to: "/doctor" },
+    { icon: User,            key: "doctor.profile",         to: "/doctor/profile" },
   ],
   admin: [
     { icon: LayoutDashboard, key: "admin.dashboard",        to: "/admin" },
     { icon: BarChart2,       key: "admin.stats",            to: "/admin/stats" },
     { icon: Microscope,      key: "admin.diseases",         to: "/admin/diseases" },
+    { icon: BadgeCheck,      key: "admin.verifications",    to: "/admin/verifications", badge: "pending" },
+    { icon: User,            key: "admin.profile",          to: "/admin/profile" },
   ],
 };
 
@@ -43,6 +48,16 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
       : location.pathname.startsWith(to);
 
   const handleLogout = () => { logout(); navigate("/"); };
+
+  // Admin: how many doctor applications wait for review
+  const [pending, setPending] = useState(0);
+  useEffect(() => {
+    if (user?.role !== "admin") return undefined;
+    const load = () => axiosClient.get("/api/admin/doctor-requests").then(r => setPending(r.data.length)).catch(() => {});
+    load();
+    window.addEventListener("verifications-changed", load);
+    return () => window.removeEventListener("verifications-changed", load);
+  }, [user?.role, location.pathname]);
 
   // One highlight that slides to the active item when the page changes
   const navRef = useRef(null);
@@ -85,7 +100,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
           <p className="flex items-center gap-2.5 px-3 pt-1.5 pb-2 text-[12.5px] uppercase tracking-[0.22em] text-dim">
             <span className="text-accent font-bold">+</span>{t("sidebar.mainMenu")}
           </p>
-          {items.map(({ icon: Icon, key, to }) => {
+          {items.map(({ icon: Icon, key, to, badge }) => {
             const active = isActive(to);
             return (
               <Link key={to} to={to} onClick={onClose}
@@ -95,6 +110,10 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
                 <Icon className={`relative w-[18px] h-[18px] shrink-0 ${active ? "text-accent" : ""}`}
                   style={active ? { filter: "drop-shadow(0 0 6px var(--glow))" } : undefined} />
                 <span className="relative transition-transform group-hover:translate-x-[3px]">{t(`sidebar.${key}`)}</span>
+                {badge && pending > 0 && (
+                  <span className="relative ml-auto min-w-[22px] h-[22px] px-1.5 rounded-full grid place-items-center bg-bad text-white text-[12px] font-bold"
+                    aria-label={t("adminVerify.pendingCount", { count: pending })}>{pending}</span>
+                )}
               </Link>
             );
           })}
@@ -105,10 +124,9 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
             <LanguageSwitcher className="flex-1 justify-center" />
             <ThemeSwitcher />
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-panel border border-line">
-            <div className="w-9 h-9 rounded-xl grid place-items-center text-white font-bold text-[15px] shrink-0" style={{ background: "var(--hero)" }}>
-              {(user?.full_name || user?.email || "?")[0].toUpperCase()}
-            </div>
+          <Link to={`/${user?.role || "patient"}/profile`} onClick={onClose}
+            className="flex items-center gap-3 p-3 rounded-2xl bg-panel border border-line hover:border-accent/40 transition-colors">
+            <Avatar user={user} size={38} />
             <div className="min-w-0 flex-1">
               <div className="text-[14.5px] font-semibold text-ink truncate">{user?.full_name || t("common.user")}</div>
               <span className="chip chip-accent !px-2 !py-0.5 !text-[12px] mt-0.5">
@@ -116,7 +134,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
                 {user?.role && t(`common.roles.${user.role}`)}
               </span>
             </div>
-          </div>
+          </Link>
           <button onClick={handleLogout}
             className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold text-muted hover:text-bad hover:bg-bad/10 transition-colors">
             <LogOut className="w-4 h-4" /> {t("common.signOut")}

@@ -7,18 +7,13 @@ import { currentLang, dateLocale } from "../../i18n";
 import PredictionBars from "../../components/charts/PredictionBars";
 import InfluenceBars from "../../components/charts/InfluenceBars";
 import PageHead from "../../components/ui/PageHead";
+import { URGENCY_META } from "../../constants/urgency";
+import PageSkeleton from "../../components/ui/Skeleton";
 import {
   Download, ChevronLeft, Stethoscope, Zap, CheckCircle, AlertCircle, AlertTriangle,
   TrendingUp, Loader2, MessageSquare, Brain, HelpCircle, Plus, ClipboardList
 } from "lucide-react";
 
-// Gradient + icon per urgency level (always shown with its word)
-const URGENCY_META = {
-  low:       { Icon: CheckCircle,   gradient: "linear-gradient(125deg, #3fd09a 0%, #14a36b 100%)" },
-  moderate:  { Icon: AlertCircle,   gradient: "linear-gradient(125deg, #f6c453 0%, #c98a07 100%)" },
-  high:      { Icon: AlertTriangle, gradient: "linear-gradient(125deg, #f8a066 0%, #e0702e 100%)" },
-  emergency: { Icon: Zap,           gradient: "linear-gradient(125deg, #ff7a6e 0%, #e0453c 55%, #a8202a 100%)" },
-};
 
 const diseaseName = (p) => p.disease?.name || p.disease_name || p.disease;
 
@@ -66,7 +61,7 @@ export default function Results() {
     finally { setAddingSymptom(null); }
   };
 
-  if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-8 h-8 text-accent animate-spin" /></div>;
+  if (loading) return <PageSkeleton tiles={0} />;
 
   if (error || !data) return (
     <div className="card text-center !py-14 max-w-md mx-auto mt-10">
@@ -96,7 +91,7 @@ export default function Results() {
       <PageHead
         back={
           <Link to="/patient" aria-label={t("common.back")}
-            className="w-[42px] h-[42px] grid place-items-center rounded-full bg-panel border border-line text-ink hover:bg-raise shrink-0 mb-1">
+            className="glass-btn w-[42px] h-[42px] grid place-items-center rounded-full shrink-0 mb-1 transition-colors">
             <ChevronLeft className="w-[18px] h-[18px]" />
           </Link>
         }

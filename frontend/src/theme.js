@@ -16,6 +16,9 @@ export function getTheme() {
 
 function apply(theme) {
   document.documentElement.dataset.theme = theme;
+  // Browser chrome (mobile address bar) follows the page background
+  document.querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", theme === "dark" ? "#070c18" : "#dfe7f3");
 }
 
 export function setTheme(theme) {

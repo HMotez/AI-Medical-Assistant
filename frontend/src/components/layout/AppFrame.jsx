@@ -7,6 +7,8 @@ import PhotoBackdrop from "./PhotoBackdrop";
 import ThemeSwitcher from "../ThemeSwitcher";
 import useRiseIn from "../ui/useRiseIn";
 import { Menu, Plus } from "lucide-react";
+import Avatar from "../ui/Avatar";
+import { firstName } from "../../utils/names";
 
 /** Signed-in layout: the whole app sits in one rounded frame (sidebar + main). */
 export default function AppFrame() {
@@ -18,9 +20,9 @@ export default function AppFrame() {
   useRiseIn(pageRef, pathname);
 
   return (
-    <div className="relative h-screen p-0 sm:p-4 lg:p-7 flex">
+    <div className="relative h-screen flex">
       <PhotoBackdrop />
-      <div className="app-frame flex-1 min-w-0 grid lg:grid-cols-[250px_minmax(0,1fr)] gap-0 lg:gap-4 p-3 lg:p-4 overflow-hidden max-sm:rounded-none">
+      <div className="app-frame flex-1 min-w-0 grid lg:grid-cols-[250px_minmax(0,1fr)] gap-0 lg:gap-4 p-3 lg:p-4 overflow-hidden">
         <Sidebar open={open} onClose={() => setOpen(false)} />
 
         <main className="min-w-0 min-h-0 flex flex-col">
@@ -37,12 +39,11 @@ export default function AppFrame() {
                   <Plus className="w-4 h-4" /> {t("common.newAnalysis")}
                 </Link>
               )}
-              <div className="hidden sm:flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full bg-panel border border-line">
-                <div className="w-8 h-8 rounded-full grid place-items-center text-white text-[13.5px] font-bold" style={{ background: "var(--hero)" }}>
-                  {(user?.full_name || "?")[0].toUpperCase()}
-                </div>
-                <span className="text-[14.5px] font-semibold text-ink">{user?.full_name?.split(" ")[0]}</span>
-              </div>
+              <Link to={`/${user?.role || "patient"}/profile`}
+                className="hidden sm:flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full bg-panel border border-line hover:border-accent/40 transition-colors">
+                <Avatar user={user} size={32} className="!rounded-full" />
+                <span className="text-[14.5px] font-semibold text-ink">{firstName(user?.full_name || "")}</span>
+              </Link>
             </div>
           </div>
 

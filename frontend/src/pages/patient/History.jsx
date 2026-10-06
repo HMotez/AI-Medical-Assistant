@@ -7,6 +7,7 @@ import PageHead from "../../components/ui/PageHead";
 import { useMedicalLabels, searchable } from "../../i18n/medical";
 import { dateLocale } from "../../i18n";
 import { ChevronRight, Activity, Trash2, Search, Loader2, Plus, FileText } from "lucide-react";
+import { Skeleton } from "../../components/ui/Skeleton";
 
 export default function History() {
   const { t } = useTranslation();
@@ -42,17 +43,17 @@ export default function History() {
         title={t("history.title")}
         subtitle={t("history.total", { count: analyses.length })}
         actions={
-          <div className="flex items-center gap-2 rounded-[14px] bg-panel border border-line px-3.5 py-2.5 w-[min(320px,80vw)]">
-            <Search className="w-4 h-4 text-dim shrink-0" />
+          <div className="flex items-center gap-2 glass-btn rounded-[14px] px-3.5 py-2.5 w-[min(320px,80vw)]">
+            <Search className="w-4 h-4 text-white/70 shrink-0" />
             <input type="text" placeholder={t("history.searchPlaceholder")} aria-label={t("history.searchPlaceholder")}
               value={query} onChange={e => setQuery(e.target.value)}
-              className="w-full bg-transparent outline-none text-[15px] text-ink placeholder:text-dim" />
+              className="w-full bg-transparent outline-none text-[15px] text-white placeholder:text-white/60" />
           </div>
         }
       />
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 text-accent animate-spin" /></div>
+        <div className="card grid gap-3" role="status"><span className="sr-only">{t("common.loading")}</span>{[0, 1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 !rounded-[20px]" />)}</div>
       ) : filtered.length === 0 ? (
         <div className="card text-center !py-14">
           <div className="card-icon mx-auto"><Activity className="w-5 h-5" /></div>

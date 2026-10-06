@@ -11,13 +11,22 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
+// 401s the caller handles itself: a wrong password (login form shows the
+// message) and the session check on startup (AuthContext just signs out)
+const HANDLED_401 = ["/api/auth/", "/api/users/me"];
+const PUBLIC_PATHS = ["/", "/login", "/register"];
+
+/** Session expired: drop the token; leave public pages, otherwise go to login. */
+function sessionExpired() {
+  localStorage.removeItem("token");
+  if (!PUBLIC_PATHS.includes(window.location.pathname)) window.location.href = "/login";
+}
+
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
+    const url = error.config?.url || "";
+    if (error.response?.status === 401 && !HANDLED_401.some(p => url.startsWith(p))) sessionExpired();
     return Promise.reject(error);
   }
 );
@@ -36,11 +45,7 @@ export async function streamPost(path, body, onEvent) {
     },
     body: JSON.stringify(body),
   });
-  if (res.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-    return;
-  }
+  if (res.status === 401) { sessionExpired(); return; }
   if (!res.ok || !res.body) throw new Error(`Request failed: ${res.status}`);
 
   const reader = res.body.getReader();
