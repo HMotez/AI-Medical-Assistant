@@ -16,8 +16,9 @@ if [ "$NEEDS_STAMP" = "yes" ]; then
 fi
 alembic upgrade head
 
-echo "Seeding demo accounts..."
+echo "Creating accounts..."
 python -m app.utils.create_admin || true
 
 echo "Starting server..."
-exec uvicorn main:app --host 0.0.0.0 --port 8000
+# Hosts such as Render pass the port to listen on in $PORT
+exec uvicorn main:app --host 0.0.0.0 --port "${PORT:-8000}" --proxy-headers --forwarded-allow-ips="*"

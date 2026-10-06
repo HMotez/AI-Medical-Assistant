@@ -14,6 +14,16 @@ PATIENT_FIELDS = {"blood_type", "height_cm", "weight_kg", "allergies", "chronic_
 DOCTOR_FIELDS = {"specialty", "license_number", "workplace", "years_experience"}
 
 
+DEMO_PATIENT_EMAIL = "patient@medai.com"
+
+
+def guard_demo(user: User) -> None:
+    """On a public deployment the shared demo patient must stay usable by everyone:
+    its password, photo and the account itself cannot be changed."""
+    if settings.is_production and user.email == DEMO_PATIENT_EMAIL:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "The shared demo account cannot be changed")
+
+
 def get_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email).first()
 
@@ -66,19 +76,12 @@ def create_doctor(db: Session, data: UserCreate, professional: dict, files: dict
     )
     db.add(user)
     db.flush()
-    saved = []
-    try:
-        for kind, (content, content_type, original) in checked.items():
-            name = upload_service.save("documents", content, content_type)
-            saved.append(name)
-            db.add(DoctorDocument(user_id=user.id, kind=kind, original_name=original[:255],
-                                  stored_name=name, content_type=content_type, size=len(content)))
-        db.commit()
-    except Exception:
-        db.rollback()
-        for name in saved:
-            upload_service.remove("documents", name)
-        raise
+    # Account, documents and files are written in one transaction: all or nothing
+    for kind, (content, content_type, original) in checked.items():
+        name = upload_service.save(db, "documents", content, content_type)
+        db.add(DoctorDocument(user_id=user.id, kind=kind, original_name=original[:255],
+                              stored_name=name, content_type=content_type, size=len(content)))
+    db.commit()
     db.refresh(user)
     return user
 
@@ -93,9 +96,9 @@ def replace_document(db: Session, user: User, kind: str, upload: UploadFile) -> 
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown document type")
     content, content_type = upload_service.read_checked(upload, upload_service.DOCUMENT_TYPES, settings.DOCUMENT_MAX_BYTES)
     for old in [d for d in user.documents if d.kind == kind]:
-        upload_service.remove("documents", old.stored_name)
+        upload_service.remove(db, "documents", old.stored_name)
         db.delete(old)
-    name = upload_service.save("documents", content, content_type)
+    name = upload_service.save(db, "documents", content, content_type)
     doc = DoctorDocument(user_id=user.id, kind=kind, original_name=(upload.filename or kind)[:255],
                          stored_name=name, content_type=content_type, size=len(content))
     db.add(doc)
@@ -150,6 +153,7 @@ def update_user(db: Session, user: User, data: UserUpdate) -> User:
 
 
 def change_password(db: Session, user: User, current: str, new: str) -> None:
+    guard_demo(user)
     if not verify_password(current, user.hashed_password):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
     user.hashed_password = hash_password(new)
@@ -158,8 +162,9 @@ def change_password(db: Session, user: User, current: str, new: str) -> None:
 
 def set_avatar(db: Session, user: User, upload: UploadFile | None) -> User:
     """Replace (or with None, remove) the profile photo."""
-    new_name = upload_service.save_avatar(upload) if upload else None
-    upload_service.remove("avatars", user.avatar_path)
+    guard_demo(user)
+    new_name = upload_service.save_avatar(db, upload) if upload else None
+    upload_service.remove(db, "avatars", user.avatar_path)
     user.avatar_path = new_name
     db.commit()
     db.refresh(user)
@@ -167,5 +172,6 @@ def set_avatar(db: Session, user: User, upload: UploadFile | None) -> User:
 
 
 def delete_user(db: Session, user: User) -> None:
+    guard_demo(user)
     user.is_active = False   # soft delete — preserve history
     db.commit()

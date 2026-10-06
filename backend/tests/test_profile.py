@@ -34,8 +34,7 @@ DOCTOR_FORM = {
 
 
 @pytest.fixture(autouse=True)
-def setup(tmp_path, monkeypatch):
-    monkeypatch.setattr(settings, "UPLOAD_DIR", str(tmp_path / "uploads"))
+def setup():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
@@ -231,3 +230,14 @@ def test_verified_licence_number_is_locked(client, admin):
 def test_patient_signup_cannot_choose_doctor_role(client):
     res = client.post("/api/auth/register", json={**PATIENT, "role": "doctor"})
     assert res.status_code == 201 and res.json()["role"] == "patient"
+
+
+def test_shared_demo_account_is_protected_in_production(client, monkeypatch):
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    client.post("/api/auth/register", json={**PATIENT, "email": "patient@medai.com"})
+    demo = login(client, "patient@medai.com")
+    assert client.put("/api/users/me/password", headers=demo,
+                      json={"current_password": "Secure123!", "new_password": "Hijacked123!"}).status_code == 403
+    assert client.post("/api/users/me/avatar", headers=demo, files={"file": ("me.png", PNG, "image/png")}).status_code == 403
+    assert client.delete("/api/users/me", headers=demo).status_code == 403
+    assert client.put("/api/users/me", headers=demo, json={"city": "Lyon"}).status_code == 200   # profile still editable

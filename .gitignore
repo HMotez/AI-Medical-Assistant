@@ -16,7 +16,7 @@ htmlcov/
 
 # ML models (large files)
 ml/models/saved/*.pkl
-ml/models/saved/*.joblib
+# The trained model files (~100 KB) are committed so the server can run without the dataset
 ml/models/saved/*.json
 ml/data/raw/*.csv
 ml/data/processed/*.csv

@@ -6,12 +6,13 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "CHANGE_ME"
+      # Set POSTGRES_PASSWORD in a .env file next to this one (never committed)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ai_medical_db
     volumes:
       - ./docker/postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"   # reachable from this computer only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -25,11 +26,9 @@ services:
     env_file: backend/.env
     environment:
       # Override localhost → db container hostname
-      DATABASE_URL: postgresql://postgres:CHANGE_ME@db:5432/ai_medical_db
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/ai_medical_db
       # Allow both port-80 frontend and local dev
       ALLOWED_ORIGINS: '["http://localhost","http://localhost:80","http://localhost:3000"]'
-      # Optional: set your Anthropic API key to enable the AI chat assistant
-      # ANTHROPIC_API_KEY: "sk-ant-..."
     ports:
       - "8000:8000"
     depends_on:
@@ -37,8 +36,6 @@ services:
         condition: service_healthy
     volumes:
       - ./ml/models/saved:/app/ml/models/saved
-      # profile photos + doctor verification documents survive rebuilds
-      - ./docker/uploads:/app/uploads
 
   frontend:
     build:

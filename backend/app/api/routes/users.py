@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
+from urllib.parse import quote
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.api.deps import get_current_user, require_admin
@@ -90,13 +91,13 @@ def admin_delete_user(user_id: int, db: Session = Depends(get_db)):
 
 # ── Files ─────────────────────────────────────────────────────────────────────
 @files_router.get("/api/avatars/{name}", include_in_schema=False)
-def get_avatar(name: str):
+def get_avatar(name: str, db: Session = Depends(get_db)):
     """Profile photos are public under an unguessable name (an <img> can't send a token)."""
-    path = upload_service.path_of("avatars", name)
-    if not path:
+    stored = upload_service.load(db, "avatars", name)
+    if not stored:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
-    return FileResponse(path, headers={"Cache-Control": "public, max-age=604800, immutable",
-                                       "X-Content-Type-Options": "nosniff"})
+    return Response(stored.data, media_type=stored.content_type,
+                    headers={"Cache-Control": "public, max-age=604800, immutable", "X-Content-Type-Options": "nosniff"})
 
 
 @files_router.get("/api/documents/{doc_id}")
@@ -105,9 +106,9 @@ def get_document(doc_id: int, current_user: User = Depends(get_current_user), db
     doc = db.query(DoctorDocument).filter(DoctorDocument.id == doc_id).first()
     if not doc or (current_user.role != UserRole.admin and doc.user_id != current_user.id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
-    path = upload_service.path_of("documents", doc.stored_name)
-    if not path:
+    stored = upload_service.load(db, "documents", doc.stored_name)
+    if not stored:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
-    return FileResponse(path, media_type=doc.content_type, filename=doc.original_name,
-                        content_disposition_type="inline",
-                        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
+    return Response(stored.data, media_type=stored.content_type, headers={
+        "Content-Disposition": f"inline; filename*=UTF-8''{quote(doc.original_name)}",
+        "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})

@@ -8,6 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 COPY ml/__init__.py ml/__init__.py
 COPY ml/src/ ml/src/
+# The trained model (about 100 KB) ships inside the image
+COPY ml/models/saved/*.joblib ml/models/saved/
 
 # Shared EN/FR display names for symptoms, diseases and specialists (PDF reports)
 COPY frontend/src/i18n/medical-labels.json app/i18n/medical-labels.json

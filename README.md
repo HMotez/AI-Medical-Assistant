@@ -14,7 +14,7 @@ reviewed by verified doctors.**
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-F7931E?logo=scikitlearn&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)
-![Tests](https://img.shields.io/badge/backend%20tests-119%20passing-2ea44f)
+![Tests](https://img.shields.io/badge/backend%20tests-124%20passing-2ea44f)
 ![i18n](https://img.shields.io/badge/languages-EN%20%7C%20FR-8A2BE2)
 
 <img src=".github/screenshots/landing-dark.png" alt="Landing page with the 3D symptom constellation" width="100%" />
@@ -32,6 +32,7 @@ reviewed by verified doctors.**
 - [How the AI works](#how-the-ai-works)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
+- [Deployment](#deployment)
 - [Doctor verification](#doctor-verification)
 - [Project structure](#project-structure)
 - [Testing](#testing)
@@ -140,6 +141,7 @@ and save it as `ml/data/processed/training_data.csv`.
 ### 2a. Run with Docker (recommended)
 
 ```bash
+echo "POSTGRES_PASSWORD=choose-a-password" > .env
 cp .env.example backend/.env          # then set SECRET_KEY (and optionally an AI API key)
 python -m ml.src.trainer              # trains the model into ml/models/saved/ (needs the backend requirements, see 2b)
 docker compose up --build
@@ -176,7 +178,11 @@ API documentation: <http://localhost:8000/api/docs>
 | Doctor (verified) | `doctor@medai.com` | `Doctor@1234` |
 | Admin | `admin@medai.com` | `Admin@1234` |
 
-> These are for local testing only. Change them (`ADMIN_PASSWORD`, `DOCTOR_PASSWORD`, `PATIENT_PASSWORD`) before any deployment.
+> These are for local development. In production (`ENVIRONMENT=production`) only your own administrator is created, from `ADMIN_EMAIL` / `ADMIN_PASSWORD`; the demo doctor never exists, and the optional demo patient is protected against changes.
+
+## Deployment
+
+The app deploys for free on **Render** (website + API, HTTPS included) with a **Neon** PostgreSQL database, in about 15 minutes: a [`render.yaml`](render.yaml) blueprint creates both services in one step. Follow **[DEPLOY.md](DEPLOY.md)**.
 
 ## Doctor verification
 
@@ -228,8 +234,8 @@ cd backend
 pytest
 ```
 
-119 tests cover the API, the ML pipeline, the text parser, PDF reports, the chat fallbacks,
-translations, profiles, uploads and the doctor verification rules.
+124 tests cover the API, the ML pipeline, the text parser, PDF reports, the chat fallbacks,
+translations, profiles, uploads, the doctor verification rules and the production safety checks.
 
 ## Security and privacy
 
@@ -237,7 +243,8 @@ translations, profiles, uploads and the doctor verification rules.
 - Doctor access requires an administrator-verified account, and is checked on the server.
 - Uploads are checked by their real content (not their file name), limited in size and stored under random names.
 - Identity documents are only served to their owner and to administrators; profile photos are stripped of camera/GPS metadata.
-- Uploaded files and secrets (`backend/.env`, `backend/uploads/`) are never committed.
+- Uploaded files live in the database, never in a public folder; secrets (`.env` files) are never committed.
+- In production the API refuses to start with a default secret key, and debug mode is forced off.
 
 ## Roadmap
 

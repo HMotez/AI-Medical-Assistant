@@ -6,6 +6,10 @@ COPY frontend/package*.json frontend/.npmrc ./
 RUN npm install
 
 COPY frontend/ .
+# Address of the API as seen by the browser. Empty = same site (nginx proxies /api);
+# on Render it is the API service URL, e.g. https://ai-medical-api.onrender.com
+ARG REACT_APP_API_URL=""
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
 RUN npm run build
 
 FROM nginx:alpine

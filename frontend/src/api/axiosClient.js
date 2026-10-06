@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
+  // "" = same site (served behind nginx); unset = local development API
+  baseURL: process.env.REACT_APP_API_URL ?? "http://localhost:8000",
   headers: { "Content-Type": "application/json" },
 });
 
